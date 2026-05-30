@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UniKod — Language Pack Editor</title>
+<style>
+:root {
+  --bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;
+  --mu:#8b949e;--accent:#7c6af7;--grn:#3fb950;--red:#f85149;
+  --yellow:#e3b341;--blue:#58a6ff;--titlebar:#1c2128;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.hdr{background:var(--titlebar);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo{font-size:16px;font-weight:800}.logo em{color:var(--accent);font-style:normal}.logo small{font-size:10px;color:var(--mu);margin-left:4px}
+.hdr-btns{margin-left:auto;display:flex;gap:6px;align-items:center}
+.btn{padding:5px 12px;border-radius:5px;border:none;cursor:pointer;font-size:11px;font-weight:600}
+.btn:hover{opacity:.85}
+.btn-grn{background:var(--grn);color:#000}
+.btn-blue{background:var(--blue);color:#000}
+.btn-ghost{background:var(--border);color:var(--text)}
+/* Dil seçici */
+.lang-sel{display:flex;gap:4px;align-items:center}
+.lbtn{padding:4px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--mu);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:3px}
+.lbtn:hover{border-color:var(--accent);color:var(--text)}
+.lbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* META */
+.meta{background:var(--panel);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.mf{display:flex;align-items:center;gap:5px}
+.mf label{font-size:11px;color:var(--mu);white-space:nowrap}
+.mf input{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 7px;font-size:12px;width:110px}
+.mf input:focus{outline:none;border-color:var(--accent)}
+.mf input.w160{width:160px}
+.yonbtn{padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--mu);cursor:pointer;font-size:11px}
+.yonbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pct{font-weight:700;font-size:13px;margin-left:auto}
+/* MAIN */
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:170px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto}
+.sb-title{font-size:10px;font-weight:700;color:var(--mu);padding:8px 10px 4px;text-transform:uppercase;letter-spacing:1px}
+.cat{padding:6px 10px;font-size:11px;cursor:pointer;border-left:2px solid transparent;color:var(--mu);display:flex;justify-content:space-between;align-items:center}
+.cat:hover{background:var(--bg);color:var(--text)}
+.cat.active{background:var(--bg);color:var(--accent);border-left-color:var(--accent)}
+.badge{font-size:10px;background:var(--border);padding:1px 5px;border-radius:10px;flex-shrink:0}
+.badge.done{background:#1a3d2b;color:var(--grn)}
+.badge.warn{background:#3d2b1a;color:var(--yellow)}
+/* EDITOR */
+.ew{flex:1;overflow-y:auto;padding:10px 14px}
+.sec-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.sec-desc{font-size:11px;color:var(--mu);margin-bottom:10px}
+.erow{display:flex;align-items:center;gap:7px;margin-bottom:5px;padding:5px 9px;background:var(--panel);border-radius:5px;border:1px solid var(--border)}
+.erow:hover{border-color:var(--accent)44}
+.erow.filled{border-color:var(--grn)33}
+.erow.empty{border-color:var(--red)22}
+.etr{font-size:11px;color:var(--yellow);width:155px;flex-shrink:0;font-family:'Consolas',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.earrow{color:var(--border);flex-shrink:0}
+.einp{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 7px;font-size:12px;font-family:'Consolas',monospace}
+.einp:focus{outline:none;border-color:var(--accent)}
+.einp.hv{border-color:var(--grn)55}
+.edesc{font-size:10px;color:var(--mu);width:120px;flex-shrink:0;text-align:right}
+/* PREVIEW */
+.prev{width:220px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border);overflow-y:auto}
+.pv-title{font-size:10px;font-weight:700;color:var(--mu);padding:8px 10px 5px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border)}
+.pv-stat{padding:8px 10px;border-bottom:1px solid var(--border)}
+.srow{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.slbl{color:var(--mu)}
+.sbar{height:4px;background:var(--border);border-radius:2px;margin-bottom:7px;overflow:hidden}
+.sfill{height:100%;background:var(--grn);border-radius:2px;transition:width .3s}
+.pv-json{padding:8px 10px}
+.pv-json pre{font-size:10px;color:var(--mu);font-family:'Consolas',monospace;white-space:pre-wrap;word-break:break-all;max-height:320px;overflow-y:auto}
+/* STATUS */
+.status{background:var(--titlebar);border-top:1px solid var(--border);padding:3px 14px;font-size:11px;color:var(--mu);display:flex;gap:14px;flex-shrink:0}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+.dot-grn{background:var(--grn)}
+@media(max-width:700px){.prev{display:none}.sidebar{width:110px}.edesc{display:none}.mf input{width:80px}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">Uni<em>Kod</em><small id="hdrTitle">Language Pack Editor</small></div>
+  <div class="lang-sel" id="langSel"></div>
+  <div class="hdr-btns">
+    <button class="btn btn-ghost" id="btnOpen" onclick="dosyaAc()">📂 Open</button>
+    <button class="btn btn-blue" id="btnJson" onclick="onizle()">👁 JSON</button>
+    <button class="btn btn-grn" id="btnDl" onclick="indir()">📥 Download .ukodlang</button>
+  </div>
+</div>
+
+<div class="meta">
+  <div class="mf"><label id="lblCode">Language Code</label><input id="mLang" placeholder="tr, en, ja..." maxlength="5" oninput="guncelle()"></div>
+  <div class="mf"><label id="lblName">Language Name</label><input id="mName" class="w160" placeholder="English, 日本語..." oninput="guncelle()"></div>
+  <div class="mf"><label id="lblFlag">Flag</label><input id="mFlag" placeholder="🌐" maxlength="4" style="width:54px" oninput="guncelle()"></div>
+  <div class="mf"><label id="lblDir">Direction</label>
+    <button class="yonbtn active" id="btnLtr" onclick="setYon('ltr')">LTR</button>
+    <button class="yonbtn" id="btnRtl" onclick="setYon('rtl')">RTL</button>
+  </div>
+  <div class="mf" style="margin-left:auto"><label id="lblPct" style="color:var(--mu)">Completion:</label><span class="pct" id="pctLabel">0%</span></div>
+</div>
+
+<div class="main">
+  <div class="sidebar"><div class="sb-title" id="sbTitle">Sections</div><div id="catList"></div></div>
+  <div class="ew" id="editorWrap"></div>
+  <div class="prev">
+    <div class="pv-title" id="pvTitle">Status</div>
+    <div class="pv-stat">
+      <div class="srow"><span class="slbl" id="stSozLbl">Dictionary</span><span style="font-weight:700" id="stSoz">0/0</span></div>
+      <div class="sbar"><div class="sfill" id="stSozBar" style="width:0%"></div></div>
+      <div class="srow"><span class="slbl">UI</span><span style="font-weight:700" id="stUi">0/0</span></div>
+      <div class="sbar"><div class="sfill" id="stUiBar" style="width:0%"></div></div>
+    </div>
+    <div class="pv-title" id="pvJsonTitle">JSON Preview</div>
+    <div class="pv-json"><pre id="jsonPre">{}</pre></div>
+  </div>
+</div>
+
+<div class="status"><span><span class="dot dot-grn"></span>UniKod Language Editor v1.0</span><span id="stMsg">New language package</span></div>
+
+<script>
+// ══════════════════════════════════════════════
+// Arayüz dilleri
+// ══════════════════════════════════════════════
+var UI_LANGS = {
+  en:{flag:'🇬🇧',name:'English',hdrTitle:'Language Pack Editor',btnOpen:'📂 Open',btnJson:'👁 JSON',btnDl:'📥 Download .ukodlang',lblCode:'Language Code',lblName:'Language Name',lblFlag:'Flag',lblDir:'Direction',lblPct:'Completion:',sbTitle:'Sections',pvTitle:'Status',pvJsonTitle:'JSON Preview',stSozLbl:'Dictionary',newPkg:'New language package',loaded:'loaded ✓',invalid:'Invalid file: ',enterLang:'Please enter the language code!',pSoz:'translation...',pUi:'text...',sozDesc:'Left: Turkish keyword → Right: Translation in this language',uiDesc:'Left: UI key → Right: Text to display in this language',
+    cats:{
+      'sozluk-kosul':'Conditions','sozluk-dongu':'Loops','sozluk-fonk':'Functions','sozluk-sinif':'Classes','sozluk-mantik':'Logic','sozluk-tip':'Data Types','sozluk-io':'I/O','sozluk-gui':'GUI','sozluk-guimet':'GUI Methods','sozluk-guioz':'GUI Properties','sozluk-olay':'Events','sozluk-mat':'Math','sozluk-metin':'String','sozluk-dizi':'Array','sozluk-kaynak':'Resource',
+      'ui-dil':'UI: Language','ui-btn':'UI: Buttons','ui-sekme':'UI: Tabs','ui-menu':'UI: Menu','ui-lib':'UI: Library','ui-hata':'UI: Errors','ui-se':'UI: SE','ui-derle':'UI: Compile','ui-sihir':'UI: Wizard','ui-deger':'UI: Values'
+    }
+  },
+  tr:{flag:'🇹🇷',name:'Türkçe',hdrTitle:'Dil Paketi Editörü',btnOpen:'📂 Aç',btnJson:'👁 JSON',btnDl:'📥 İndir .ukodlang',lblCode:'Dil Kodu',lblName:'Dil Adı',lblFlag:'Bayrak',lblDir:'Yön',lblPct:'Tamamlanma:',sbTitle:'Bölümler',pvTitle:'Durum',pvJsonTitle:'JSON Önizleme',stSozLbl:'Sözlük',newPkg:'Yeni dil paketi',loaded:'yüklendi ✓',invalid:'Geçersiz dosya: ',enterLang:'Lütfen dil kodunu girin!',pSoz:'karşılığı...',pUi:'metin...',sozDesc:'Sol: Türkçe keyword → Sağ: Bu dildeki karşılığı',uiDesc:'Sol: Arayüz anahtarı → Sağ: Bu dilde görünecek metin',
+    cats:{
+      'sozluk-kosul':'Koşullar','sozluk-dongu':'Döngüler','sozluk-fonk':'Fonksiyon','sozluk-sinif':'Sınıf','sozluk-mantik':'Mantık','sozluk-tip':'Veri Tipleri','sozluk-io':'Giriş/Çıkış','sozluk-gui':'GUI','sozluk-guimet':'GUI Metod','sozluk-guioz':'GUI Özellik','sozluk-olay':'Olaylar','sozluk-mat':'Matematik','sozluk-metin':'Metin','sozluk-dizi':'Dizi','sozluk-kaynak':'Kaynak',
+      'ui-dil':'UI: Dil','ui-btn':'UI: Butonlar','ui-sekme':'UI: Sekmeler','ui-menu':'UI: Menü','ui-lib':'UI: Kütüphane','ui-hata':'UI: Hata','ui-se':'UI: SE','ui-derle':'UI: Derleme','ui-sihir':'UI: Sihirbaz','ui-deger':'UI: Değer'
+    }
+  },
+  de:{flag:'🇩🇪',name:'Deutsch',hdrTitle:'Sprachpaket-Editor',btnOpen:'📂 Öffnen',btnJson:'👁 JSON',btnDl:'📥 Herunterladen .ukodlang',lblCode:'Sprachcode',lblName:'Sprachname',lblFlag:'Flagge',lblDir:'Richtung',lblPct:'Fortschritt:',sbTitle:'Abschnitte',pvTitle:'Status',pvJsonTitle:'JSON-Vorschau',stSozLbl:'Wörterbuch',newPkg:'Neues Sprachpaket',loaded:'geladen ✓',invalid:'Ungültige Datei: ',enterLang:'Bitte Sprachcode eingeben!',pSoz:'Übersetzung...',pUi:'Text...',sozDesc:'Links: Türkisches Keyword → Rechts: Übersetzung',uiDesc:'Links: UI-Schlüssel → Rechts: Anzeigetext',
+    cats:{
+      'sozluk-kosul':'Bedingungen','sozluk-dongu':'Schleifen','sozluk-fonk':'Funktionen','sozluk-sinif':'Klassen','sozluk-mantik':'Logik','sozluk-tip':'Datentypen','sozluk-io':'Ein-/Ausgabe','sozluk-gui':'GUI','sozluk-guimet':'GUI-Methoden','sozluk-guioz':'GUI-Eigenschaften','sozluk-olay':'Ereignisse','sozluk-mat':'Mathematik','sozluk-metin':'Text','sozluk-dizi':'Array','sozluk-kaynak':'Ressource',
+      'ui-dil':'UI: Sprache','ui-btn':'UI: Schaltflächen','ui-sekme':'UI: Reiter','ui-menu':'UI: Menü','ui-lib':'UI: Bibliothek','ui-hata':'UI: Fehler','ui-se':'UI: SE','ui-derle':'UI: Kompilieren','ui-sihir':'UI: Assistent','ui-deger':'UI: Werte'
+    }
+  },
+  fr:{flag:'🇫🇷',name:'Français',hdrTitle:'Éditeur de paquet de langue',btnOpen:'📂 Ouvrir',btnJson:'👁 JSON',btnDl:'📥 Télécharger .ukodlang',lblCode:'Code de langue',lblName:'Nom de la langue',lblFlag:'Drapeau',lblDir:'Direction',lblPct:'Avancement:',sbTitle:'Sections',pvTitle:'Statut',pvJsonTitle:'Aperçu JSON',stSozLbl:'Dictionnaire',newPkg:'Nouveau paquet de langue',loaded:'chargé ✓',invalid:'Fichier invalide: ',enterLang:'Veuillez saisir le code de langue!',pSoz:'traduction...',pUi:'texte...',sozDesc:'Gauche: Mot-clé turc → Droite: Traduction',uiDesc:'Gauche: Clé UI → Droite: Texte à afficher',
+    cats:{
+      'sozluk-kosul':'Conditions','sozluk-dongu':'Boucles','sozluk-fonk':'Fonctions','sozluk-sinif':'Classes','sozluk-mantik':'Logique','sozluk-tip':'Types de données','sozluk-io':'E/S','sozluk-gui':'GUI','sozluk-guimet':'Méthodes GUI','sozluk-guioz':'Propriétés GUI','sozluk-olay':'Événements','sozluk-mat':'Mathématiques','sozluk-metin':'Chaîne','sozluk-dizi':'Tableau','sozluk-kaynak':'Ressource',
+      'ui-dil':'UI: Langue','ui-btn':'UI: Boutons','ui-sekme':'UI: Onglets','ui-menu':'UI: Menu','ui-lib':'UI: Bibliothèque','ui-hata':'UI: Erreur','ui-se':'UI: SE','ui-derle':'UI: Compiler','ui-sihir':'UI: Assistant','ui-deger':'UI: Valeurs'
+    }
+  },
+  es:{flag:'🇪🇸',name:'Español',hdrTitle:'Editor de paquete de idioma',btnOpen:'📂 Abrir',btnJson:'👁 JSON',btnDl:'📥 Descargar .ukodlang',lblCode:'Código de idioma',lblName:'Nombre del idioma',lblFlag:'Bandera',lblDir:'Dirección',lblPct:'Completado:',sbTitle:'Secciones',pvTitle:'Estado',pvJsonTitle:'Vista previa JSON',stSozLbl:'Diccionario',newPkg:'Nuevo paquete de idioma',loaded:'cargado ✓',invalid:'Archivo inválido: ',enterLang:'¡Ingrese el código de idioma!',pSoz:'traducción...',pUi:'texto...',sozDesc:'Izquierda: Keyword turco → Derecha: Traducción',uiDesc:'Izquierda: Clave UI → Derecha: Texto a mostrar',
+    cats:{
+      'sozluk-kosul':'Condiciones','sozluk-dongu':'Bucles','sozluk-fonk':'Funciones','sozluk-sinif':'Clases','sozluk-mantik':'Lógica','sozluk-tip':'Tipos de datos','sozluk-io':'E/S','sozluk-gui':'GUI','sozluk-guimet':'Métodos GUI','sozluk-guioz':'Propiedades GUI','sozluk-olay':'Eventos','sozluk-mat':'Matemáticas','sozluk-metin':'Cadena','sozluk-dizi':'Arreglo','sozluk-kaynak':'Recurso',
+      'ui-dil':'UI: Idioma','ui-btn':'UI: Botones','ui-sekme':'UI: Pestañas','ui-menu':'UI: Menú','ui-lib':'UI: Biblioteca','ui-hata':'UI: Error','ui-se':'UI: SE','ui-derle':'UI: Compilar','ui-sihir':'UI: Asistente','ui-deger':'UI: Valores'
+    }
+  },
+  id:{flag:'🇮🇩',name:'Indonesia',hdrTitle:'Editor Paket Bahasa',btnOpen:'📂 Buka',btnJson:'👁 JSON',btnDl:'📥 Unduh .ukodlang',lblCode:'Kode Bahasa',lblName:'Nama Bahasa',lblFlag:'Bendera',lblDir:'Arah',lblPct:'Kelengkapan:',sbTitle:'Bagian',pvTitle:'Status',pvJsonTitle:'Pratinjau JSON',stSozLbl:'Kamus',newPkg:'Paket bahasa baru',loaded:'dimuat ✓',invalid:'File tidak valid: ',enterLang:'Masukkan kode bahasa!',pSoz:'terjemahan...',pUi:'teks...',sozDesc:'Kiri: Kata kunci Turki → Kanan: Terjemahan',uiDesc:'Kiri: Kunci UI → Kanan: Teks yang ditampilkan',
+    cats:{
+      'sozluk-kosul':'Kondisi','sozluk-dongu':'Perulangan','sozluk-fonk':'Fungsi','sozluk-sinif':'Kelas','sozluk-mantik':'Logika','sozluk-tip':'Tipe Data','sozluk-io':'I/O','sozluk-gui':'GUI','sozluk-guimet':'Metode GUI','sozluk-guioz':'Properti GUI','sozluk-olay':'Peristiwa','sozluk-mat':'Matematika','sozluk-metin':'String','sozluk-dizi':'Larik','sozluk-kaynak':'Sumber',
+      'ui-dil':'UI: Bahasa','ui-btn':'UI: Tombol','ui-sekme':'UI: Tab','ui-menu':'UI: Menu','ui-lib':'UI: Pustaka','ui-hata':'UI: Kesalahan','ui-se':'UI: SE','ui-derle':'UI: Kompilasi','ui-sihir':'UI: Panduan','ui-deger':'UI: Nilai'
+    }
+  }
+};
+
+var _edLang = 'en'; // Editör arayüz dili
+var _yon = 'ltr';
+var _sozluk = {};
+var _ui = {};
+
+// ══════════════════════════════════════════════
+// Tanımlar
+// ══════════════════════════════════════════════
+var SOZLUK_DEFS = [
+  {k:'Eger',g:'sozluk-kosul',d:'if'},{k:'Ise',g:'sozluk-kosul',d:'then'},{k:'Degilse',g:'sozluk-kosul',d:'else'},{k:'DegilseEger',g:'sozluk-kosul',d:'else if'},{k:'EgerBitti',g:'sozluk-kosul',d:'end if'},
+  {k:'Tekrarla',g:'sozluk-dongu',d:'repeat'},{k:'Kez',g:'sozluk-dongu',d:'times'},{k:'TekrarlaBitti',g:'sozluk-dongu',d:'end repeat'},{k:'Dongu',g:'sozluk-dongu',d:'for loop'},{k:'DonguBitti',g:'sozluk-dongu',d:'end for'},{k:'To',g:'sozluk-dongu',d:'to (range)'},{k:'Adim',g:'sozluk-dongu',d:'step'},{k:'Suresince',g:'sozluk-dongu',d:'while'},{k:'SuresinceBitti',g:'sozluk-dongu',d:'end while'},
+  {k:'Fonksiyon',g:'sozluk-fonk',d:'function'},{k:'FonksiyonBitti',g:'sozluk-fonk',d:'end function'},{k:'Don',g:'sozluk-fonk',d:'return'},{k:'Kes',g:'sozluk-fonk',d:'break'},{k:'Devam',g:'sozluk-fonk',d:'continue'},
+  {k:'Sinif',g:'sozluk-sinif',d:'class'},{k:'SinifBitti',g:'sozluk-sinif',d:'end class'},{k:'Yapi',g:'sozluk-sinif',d:'struct'},{k:'YapiBitti',g:'sozluk-sinif',d:'end struct'},
+  {k:'Ve',g:'sozluk-mantik',d:'and'},{k:'Veya',g:'sozluk-mantik',d:'or'},{k:'Degil',g:'sozluk-mantik',d:'not'},{k:'Dogru',g:'sozluk-mantik',d:'true'},{k:'Yanlis',g:'sozluk-mantik',d:'false'},
+  {k:'Sayi',g:'sozluk-tip',d:'integer'},{k:'Ondalik',g:'sozluk-tip',d:'float/decimal'},{k:'Metin',g:'sozluk-tip',d:'string/text'},{k:'Mantiksal',g:'sozluk-tip',d:'boolean'},{k:'Dizi',g:'sozluk-tip',d:'array'},{k:'Varyant',g:'sozluk-tip',d:'variant/any'},
+  {k:'Yaz',g:'sozluk-io',d:'print/write'},{k:'Oku',g:'sozluk-io',d:'read/input'},{k:'Mesaj',g:'sozluk-io',d:'alert/message'},
+  {k:'Pencere',g:'sozluk-gui',d:'window'},{k:'Dugme',g:'sozluk-gui',d:'button'},{k:'Etiket',g:'sozluk-gui',d:'label'},{k:'GirisSatiri',g:'sozluk-gui',d:'text input'},{k:'Kanvas',g:'sozluk-gui',d:'canvas 2D'},{k:'Kanvas3D',g:'sozluk-gui',d:'canvas 3D'},{k:'Zamanlayici',g:'sozluk-gui',d:'timer'},{k:'Ses',g:'sozluk-gui',d:'sound'},{k:'Liste',g:'sozluk-gui',d:'listbox'},{k:'WebTarayici',g:'sozluk-gui',d:'webview'},
+  {k:'Goster',g:'sozluk-guimet',d:'show'},{k:'Gizle',g:'sozluk-guimet',d:'hide'},{k:'Ekle',g:'sozluk-guimet',d:'add'},{k:'Kaldir',g:'sozluk-guimet',d:'remove'},{k:'Baslat',g:'sozluk-guimet',d:'start'},{k:'Durdur',g:'sozluk-guimet',d:'stop'},
+  {k:'baslik',g:'sozluk-guioz',d:'title'},{k:'yazi',g:'sozluk-guioz',d:'text'},{k:'renk',g:'sozluk-guioz',d:'color'},{k:'arkaplan',g:'sozluk-guioz',d:'background'},{k:'genislik',g:'sozluk-guioz',d:'width'},{k:'yukseklik',g:'sozluk-guioz',d:'height'},{k:'stil',g:'sozluk-guioz',d:'style'},{k:'deger',g:'sozluk-guioz',d:'value'},{k:'ipucu',g:'sozluk-guioz',d:'placeholder'},{k:'aralik',g:'sozluk-guioz',d:'interval'},{k:'kaynak',g:'sozluk-guioz',d:'source'},
+  {k:'tiklaninca',g:'sozluk-olay',d:'on click'},{k:'degisince',g:'sozluk-olay',d:'on change'},{k:'her_tikta',g:'sozluk-olay',d:'on tick'},{k:'kapatilinca',g:'sozluk-olay',d:'on close'},{k:'enterasilinca',g:'sozluk-olay',d:'on enter key'},
+  {k:'Rastgele',g:'sozluk-mat',d:'random'},{k:'Simdi',g:'sozluk-mat',d:'now'},{k:'Uzunluk',g:'sozluk-mat',d:'length'},{k:'Yuvarla',g:'sozluk-mat',d:'round'},{k:'MutlakDeger',g:'sozluk-mat',d:'abs'},{k:'KareKok',g:'sozluk-mat',d:'sqrt'},
+  {k:'BuyukHarf',g:'sozluk-metin',d:'uppercase'},{k:'KucukHarf',g:'sozluk-metin',d:'lowercase'},{k:'MetinBol',g:'sozluk-metin',d:'split'},{k:'MetinKes',g:'sozluk-metin',d:'substring'},{k:'MetinIceriyorMu',g:'sozluk-metin',d:'contains'},{k:'MetineKonvert',g:'sozluk-metin',d:'to string'},{k:'SayiyaKonvert',g:'sozluk-metin',d:'to number'},
+  {k:'DiziEkle',g:'sozluk-dizi',d:'push'},{k:'DiziCikar',g:'sozluk-dizi',d:'pop/remove'},{k:'DiziBul',g:'sozluk-dizi',d:'find'},{k:'DiziSirala',g:'sozluk-dizi',d:'sort'},
+  {k:'KaynakAl',g:'sozluk-kaynak',d:'get resource'}
+];
+
+var UI_DEFS = [
+  {k:'lang.name',g:'ui-dil',d:'display name'},{k:'lang.flag',g:'ui-dil',d:'flag emoji'},
+  {k:'btn.run',g:'ui-btn',d:'▶ Run'},{k:'btn.stop',g:'ui-btn',d:'⏹ Stop'},{k:'btn.compile',g:'ui-btn',d:'📦 Compile'},{k:'btn.convert',g:'ui-btn',d:'🔄 Convert'},{k:'btn.save',g:'ui-btn',d:'💾 Save'},{k:'btn.open',g:'ui-btn',d:'📂 Open'},{k:'btn.clear',g:'ui-btn',d:'🗑 Clear'},
+  {k:'tab.editor',g:'ui-sekme',d:'✏️ Editor'},{k:'tab.konsol',g:'ui-sekme',d:'💻 Console'},{k:'tab.variables',g:'ui-sekme',d:'📦 Variables'},{k:'tab.help',g:'ui-sekme',d:'📖 Help'},
+  {k:'menu.file',g:'ui-menu',d:'File'},{k:'menu.edit',g:'ui-menu',d:'Edit'},{k:'menu.lib',g:'ui-menu',d:'Library'},{k:'menu.wizard',g:'ui-menu',d:'Wizard'},{k:'menu.debug',g:'ui-menu',d:'Debug'},{k:'menu.help',g:'ui-menu',d:'Help'},
+  {k:'lib.title',g:'ui-lib',d:'📦 Library'},{k:'lib.load',g:'ui-lib',d:'Load'},{k:'lib.loaded',g:'ui-lib',d:'✓ Loaded'},{k:'lib.remove',g:'ui-lib',d:'🗑 Remove'},{k:'lib.search',g:'ui-lib',d:'🔍 Search...'},
+  {k:'se.title',g:'ui-se',d:'Solution Explorer'},{k:'se.modules',g:'ui-se',d:'📂 Modules'},{k:'se.resources',g:'ui-se',d:'📂 Resources'},{k:'se.addres',g:'ui-se',d:'➕ Add Resource'},{k:'se.delconfirm',g:'ui-se',d:'Delete resource:'},
+  {k:'compile.title',g:'ui-derle',d:'📦 Compile'},{k:'compile.go',g:'ui-derle',d:'🔨 Compile & Download'},{k:'compile.cancel',g:'ui-derle',d:'Cancel'},{k:'compile.appname',g:'ui-derle',d:'App name'},{k:'compile.author',g:'ui-derle',d:'Author'},
+  {k:'wiz.title',g:'ui-sihir',d:'🧙 Wizard'},{k:'wiz.create',g:'ui-sihir',d:'✅ Create'},{k:'wiz.cancel',g:'ui-sihir',d:'Cancel'},{k:'wiz.console',g:'ui-sihir',d:'Console'},{k:'wiz.window',g:'ui-sihir',d:'Window'},{k:'wiz.game',g:'ui-sihir',d:'Game'},
+  {k:'input.ok',g:'ui-deger',d:'OK'},{k:'input.title',g:'ui-deger',d:'Input'},{k:'status.line',g:'ui-deger',d:'Line'},{k:'status.col',g:'ui-deger',d:'Column'}
+];
+
+var ALL_CATS = [
+  'sozluk-kosul','sozluk-dongu','sozluk-fonk','sozluk-sinif','sozluk-mantik','sozluk-tip','sozluk-io',
+  'sozluk-gui','sozluk-guimet','sozluk-guioz','sozluk-olay','sozluk-mat','sozluk-metin','sozluk-dizi','sozluk-kaynak',
+  'ui-dil','ui-btn','ui-sekme','ui-menu','ui-lib','ui-se','ui-derle','ui-sihir','ui-deger'
+];
+
+var _activeCat = 'sozluk-kosul';
+
+// ══════════════════════════════════════════════
+// Editör dili değiştir
+// ══════════════════════════════════════════════
+function setEdLang(lang) {
+  _edLang = lang;
+  var t = UI_LANGS[lang];
+  // Header
+  document.getElementById('hdrTitle').textContent = t.hdrTitle;
+  document.getElementById('btnOpen').textContent = t.btnOpen;
+  document.getElementById('btnJson').textContent = t.btnJson;
+  document.getElementById('btnDl').textContent = t.btnDl;
+  // Meta
+  document.getElementById('lblCode').textContent = t.lblCode;
+  document.getElementById('lblName').textContent = t.lblName;
+  document.getElementById('lblFlag').textContent = t.lblFlag;
+  document.getElementById('lblDir').textContent = t.lblDir;
+  document.getElementById('lblPct').textContent = t.lblPct;
+  // Sidebar
+  document.getElementById('sbTitle').textContent = t.sbTitle;
+  // Preview
+  document.getElementById('pvTitle').textContent = t.pvTitle;
+  document.getElementById('pvJsonTitle').textContent = t.pvJsonTitle;
+  document.getElementById('stSozLbl').textContent = t.stSozLbl;
+  // Dil seçici aktif
+  document.querySelectorAll('.lbtn').forEach(function(b){
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  // Kategori isimlerini güncelle
+  ALL_CATS.forEach(function(cid){
+    var el = document.getElementById('catlbl_'+cid);
+    if(el) el.textContent = t.cats[cid] || cid;
+  });
+  // Aktif bölümü yeniden render
+  showCat(_activeCat);
+}
+
+// ══════════════════════════════════════════════
+// Init
+// ══════════════════════════════════════════════
+window.onload = function() {
+  // Dil seçici butonları
+  var sel = document.getElementById('langSel');
+  Object.keys(UI_LANGS).forEach(function(lk){
+    var b = document.createElement('button');
+    b.className = 'lbtn' + (lk === _edLang ? ' active' : '');
+    b.dataset.lang = lk;
+    b.textContent = UI_LANGS[lk].flag + ' ' + UI_LANGS[lk].name;
+    b.onclick = function(){ setEdLang(lk); };
+    sel.appendChild(b);
+  });
+  buildCatList();
+  setEdLang('en');
+  guncelle();
+};
+
+function buildCatList() {
+  var el = document.getElementById('catList');
+  el.innerHTML = '';
+  var t = UI_LANGS[_edLang];
+  ALL_CATS.forEach(function(cid){
+    var defs = getDefs(cid);
+    var store = cid.startsWith('sozluk') ? _sozluk : _ui;
+    var filled = defs.filter(function(d){ return store[d.k] && store[d.k].trim(); }).length;
+    var div = document.createElement('div');
+    div.className = 'cat' + (cid === _activeCat ? ' active' : '');
+    div.id = 'cat_'+cid;
+    div.onclick = (function(id){ return function(){ showCat(id); }; })(cid);
+    var lbl = document.createElement('span');
+    lbl.id = 'catlbl_'+cid;
+    lbl.textContent = (t && t.cats[cid]) || cid;
+    var badge = document.createElement('span');
+    badge.id = 'badge_'+cid;
+    badge.className = 'badge' + (filled === defs.length ? ' done' : filled > 0 ? ' warn' : '');
+    badge.textContent = filled+'/'+defs.length;
+    div.appendChild(lbl);
+    div.appendChild(badge);
+    el.appendChild(div);
+  });
+}
+
+function getDefs(cid) {
+  if (cid.startsWith('sozluk')) return SOZLUK_DEFS.filter(function(d){ return d.g === cid; });
+  return UI_DEFS.filter(function(d){ return d.g === cid; });
+}
+
+function showCat(catId) {
+  _activeCat = catId;
+  document.querySelectorAll('.cat').forEach(function(el){
+    el.classList.toggle('active', el.id === 'cat_'+catId);
+  });
+  var t = UI_LANGS[_edLang];
+  var defs = getDefs(catId);
+  var isSoz = catId.startsWith('sozluk');
+  var store = isSoz ? _sozluk : _ui;
+  var wrap = document.getElementById('editorWrap');
+  wrap.innerHTML = '';
+  var title = document.createElement('div');
+  title.className = 'sec-title';
+  title.textContent = (t && t.cats[catId]) || catId;
+  var desc = document.createElement('div');
+  desc.className = 'sec-desc';
+  desc.textContent = isSoz ? t.sozDesc : t.uiDesc;
+  wrap.appendChild(title);
+  wrap.appendChild(desc);
+  defs.forEach(function(def){
+    var val = store[def.k] || '';
+    var row = document.createElement('div');
+    row.className = 'erow' + (val ? ' filled' : ' empty');
+    var trSpan = document.createElement('span');
+    trSpan.className = 'etr';
+    trSpan.textContent = def.k;
+    var arrow = document.createElement('span');
+    arrow.className = 'earrow';
+    arrow.textContent = '→';
+    var inp = document.createElement('input');
+    inp.className = 'einp' + (val ? ' hv' : '');
+    inp.placeholder = isSoz ? def.k+' → '+t.pSoz : def.d+' ('+t.pUi+')';
+    inp.value = val;
+    inp.dataset.key = def.k;
+    inp.dataset.type = isSoz ? 'sozluk' : 'ui';
+    inp.oninput = function(){
+      store[this.dataset.key] = this.value;
+      row.className = 'erow' + (this.value ? ' filled' : ' empty');
+      this.className = 'einp' + (this.value ? ' hv' : '');
+      guncelle();
+    };
+    var dscSpan = document.createElement('span');
+    dscSpan.className = 'edesc';
+    dscSpan.textContent = def.d;
+    row.appendChild(trSpan);
+    row.appendChild(arrow);
+    row.appendChild(inp);
+    row.appendChild(dscSpan);
+    wrap.appendChild(row);
+  });
+}
+
+function setYon(y) {
+  _yon = y;
+  document.getElementById('btnLtr').classList.toggle('active', y === 'ltr');
+  document.getElementById('btnRtl').classList.toggle('active', y === 'rtl');
+  guncelle();
+}
+
+function guncelle() {
+  var sozDolu = Object.values(_sozluk).filter(function(v){ return v&&v.trim(); }).length;
+  var uiDolu = Object.values(_ui).filter(function(v){ return v&&v.trim(); }).length;
+  document.getElementById('stSoz').textContent = sozDolu+'/'+SOZLUK_DEFS.length;
+  document.getElementById('stUi').textContent = uiDolu+'/'+UI_DEFS.length;
+  document.getElementById('stSozBar').style.width = Math.round(sozDolu/SOZLUK_DEFS.length*100)+'%';
+  document.getElementById('stUiBar').style.width = Math.round(uiDolu/UI_DEFS.length*100)+'%';
+  var total = SOZLUK_DEFS.length + UI_DEFS.length;
+  var dolu = sozDolu + uiDolu;
+  var pct = Math.round(dolu/total*100);
+  var pctEl = document.getElementById('pctLabel');
+  pctEl.textContent = pct+'%';
+  pctEl.style.color = pct===100?'var(--grn)':pct>50?'var(--yellow)':'var(--mu)';
+  // Badge güncelle
+  ALL_CATS.forEach(function(cid){
+    var defs = getDefs(cid);
+    var store = cid.startsWith('sozluk') ? _sozluk : _ui;
+    var filled = defs.filter(function(d){ return store[d.k]&&store[d.k].trim(); }).length;
+    var b = document.getElementById('badge_'+cid);
+    if(b){ b.textContent=filled+'/'+defs.length; b.className='badge'+(filled===defs.length?' done':filled>0?' warn':''); }
+  });
+  onizle();
+  var t = UI_LANGS[_edLang];
+  document.getElementById('stMsg').textContent = dolu+'/'+total+' fields filled ('+pct+'%)';
+}
+
+function buildJSON() {
+  var lang = document.getElementById('mLang').value.trim()||'xx';
+  var name = document.getElementById('mName').value.trim()||'New Language';
+  var flag = document.getElementById('mFlag').value.trim()||'🌐';
+  var soz = {};
+  SOZLUK_DEFS.forEach(function(def){
+    if(_sozluk[def.k]&&_sozluk[def.k].trim()) soz[_sozluk[def.k].trim()]=def.k;
+  });
+  var ui = {};
+  UI_DEFS.forEach(function(def){
+    if(_ui[def.k]&&_ui[def.k].trim()) ui[def.k]=_ui[def.k].trim();
+  });
+  return {lang:lang,name:name,flag:flag,yon:_yon,sozluk:soz,ui:ui};
+}
+
+function onizle() {
+  var j = buildJSON();
+  document.getElementById('jsonPre').textContent = JSON.stringify(j,null,2).slice(0,1200)+(JSON.stringify(j).length>1200?'\n...':'');
+}
+
+function indir() {
+  var t = UI_LANGS[_edLang];
+  var j = buildJSON();
+  if(!j.lang||j.lang==='xx'){alert(t.enterLang);return;}
+  var blob = new Blob([JSON.stringify(j,null,2)],{type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = j.lang+'.ukodlang';
+  a.click();
+}
+
+function dosyaAc() {
+  var t = UI_LANGS[_edLang];
+  var inp = document.createElement('input');
+  inp.type='file'; inp.accept='.ukodlang,.json';
+  inp.onchange = function(){
+    var f=this.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(e){
+      try{
+        var j=JSON.parse(e.target.result);
+        document.getElementById('mLang').value=j.lang||'';
+        document.getElementById('mName').value=j.name||'';
+        document.getElementById('mFlag').value=j.flag||'';
+        setYon(j.yon||'ltr');
+        _sozluk={};
+        if(j.sozluk) Object.keys(j.sozluk).forEach(function(dk){ _sozluk[j.sozluk[dk]]=dk; });
+        _ui={};
+        if(j.ui) Object.keys(j.ui).forEach(function(k){ _ui[k]=j.ui[k]; });
+        buildCatList();
+        showCat(_activeCat);
+        guncelle();
+        document.getElementById('stMsg').textContent=(j.name||j.lang)+' '+t.loaded;
+      }catch(ex){alert(t.invalid+ex.message);}
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+</script>
+</body>
+</html>
