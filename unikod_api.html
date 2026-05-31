@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UniKOD — API Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080c14;--panel:#0e1420;--panel2:#131929;--border:#1e2d45;--text:#d4e2f4;--mu:#4a6280;--accent:#4f9eff;--accent2:#a78bfa;--grn:#34d399;--red:#f87171;--yellow:#fbbf24;--orange:#fb923c;--titlebar:#0a1018;}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+.hdr{background:var(--titlebar);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;backdrop-filter:blur(10px)}
+.logo{font-size:18px;font-weight:800;letter-spacing:-1px;white-space:nowrap}
+.logo em{color:var(--accent);font-style:normal}
+.logo small{font-size:10px;color:var(--mu);font-weight:400;margin-left:5px}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.search{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 12px;font-size:12px;width:180px;font-family:'Sora',sans-serif}
+.search:focus{outline:none;border-color:var(--accent)}
+.search::placeholder{color:var(--mu)}
+.menu-btn{display:none;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 10px;cursor:pointer;font-size:16px}
+
+/* DİL BAR */
+.lang-bar{background:var(--panel);border-bottom:1px solid var(--border);padding:7px 20px;display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lang-bar::-webkit-scrollbar{height:3px}
+.lang-bar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.lbtn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--mu);cursor:pointer;font-size:11px;font-family:'Sora',sans-serif;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.lbtn:hover{color:var(--text);border-color:var(--accent)}
+.lbtn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;min-height:0;position:relative}
+
+/* SIDEBAR */
+.sidebar{width:230px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);overflow-y:auto;position:sticky;top:89px;height:calc(100vh - 89px);transition:transform .3s ease;z-index:150}
+.sb-section{padding:12px 0 4px}
+.sb-title{font-size:10px;font-weight:700;color:var(--mu);padding:0 16px 5px;text-transform:uppercase;letter-spacing:1.5px}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:12px;cursor:pointer;color:var(--mu);border-left:2px solid transparent;transition:all .1s;text-decoration:none}
+.sb-item:hover{background:var(--panel2);color:var(--text)}
+.sb-item.active{background:var(--panel2);color:var(--accent);border-left-color:var(--accent)}
+.sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sb-close{display:none;position:absolute;top:10px;right:10px;background:var(--border);border:none;color:var(--text);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;align-items:center;justify-content:center}
+
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:#00000080;z-index:140;backdrop-filter:blur(2px)}
+.overlay.open{display:block}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:28px 32px;min-width:0}
+
+/* HERO */
+.hero{margin-bottom:40px;padding-bottom:28px;border-bottom:1px solid var(--border)}
+.hero h1{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.hero h1 em{color:var(--accent);font-style:normal}
+.hero p{font-size:13px;color:var(--mu);line-height:1.7;max-width:560px}
+.v-badge{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:11px;color:var(--mu);margin-bottom:14px}
+.v-badge span{color:var(--grn);font-weight:700}
+
+/* SECTION */
+.section{margin-bottom:48px}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sec-icon{font-size:20px}
+.sec-title{font-size:20px;font-weight:800;letter-spacing:-.5px}
+
+/* ENTRY */
+.entry{background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.entry:hover{border-color:var(--accent)44}
+.entry-head{padding:12px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.entry-name{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)}
+.entry-sig{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mu)}
+.entry-tags{margin-left:auto;display:flex;gap:5px;flex-shrink:0}
+.tag{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.5px}
+.tag-fn{background:#1a2d4a;color:var(--accent)}
+.tag-oz{background:#1a3d2b;color:var(--grn)}
+.tag-olay{background:#3d2b1a;color:var(--orange)}
+.tag-tip{background:#2d1a3d;color:var(--accent2)}
+.tag-kw{background:#3d3a1a;color:var(--yellow)}
+.entry-body{padding:0 16px 16px;border-top:1px solid var(--border)}
+.entry-desc{font-size:13px;color:var(--mu);margin:10px 0 8px;line-height:1.6}
+
+/* PARAMS */
+.pt{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin:12px 0 5px}
+.pr{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)22;flex-wrap:wrap}
+.pn{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--yellow);min-width:90px}
+.pty{font-size:11px;color:var(--accent2);min-width:70px}
+.pd{font-size:12px;color:var(--mu)}
+.ret{display:flex;align-items:center;gap:7px;margin:8px 0;font-size:12px}
+.rl{color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;white-space:nowrap}
+.rt{font-family:'JetBrains Mono',monospace;color:var(--accent2)}
+.rd{color:var(--mu)}
+
+/* TRANS */
+.trans-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.tc{display:flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:11px}
+.tf{font-size:12px}
+.tk{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:700}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+.tbl th{text-align:left;padding:6px 10px;background:var(--panel2);color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.tbl td{padding:6px 10px;border-bottom:1px solid var(--border)44}
+.tbl td:first-child{font-family:'JetBrains Mono',monospace;color:var(--accent)}
+.tbl td:nth-child(2){color:var(--accent2)}
+.tbl td:nth-child(3){color:var(--mu)}
+
+/* CODE */
+.cb{background:#050810;border:1px solid var(--border);border-radius:7px;padding:12px 14px;margin:10px 0;overflow-x:auto;position:relative}
+.cb pre{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:var(--text)}
+.cl{position:absolute;top:7px;right:9px;font-size:10px;color:var(--mu);font-family:'JetBrains Mono',monospace}
+.kw{color:var(--accent2);font-weight:700}
+.fn{color:var(--accent)}
+.str{color:var(--grn)}
+.num{color:var(--orange)}
+.cm{color:var(--mu);font-style:italic}
+.type{color:var(--yellow)}
+
+/* MOBILE */
+@media(max-width:768px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);box-shadow:4px 0 20px #00000060}
+  .sidebar.open{transform:translateX(0)}
+  .sb-close{display:flex}
+  .menu-btn{display:block}
+  .content{padding:16px}
+  .hero h1{font-size:22px}
+  .search{width:130px}
+  .hdr{padding:10px 14px}
+  .lang-bar{padding:6px 14px}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  <div class="logo">Uni<em>KOD</em><small>API Reference</small></div>
+  <div class="hdr-right">
+    <input class="search" type="text" id="searchInput" placeholder="🔍 Search..." oninput="doSearch(this.value)">
+  </div>
+</div>
+
+<div class="lang-bar" id="langBar"></div>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <button class="sb-close" onclick="closeSidebar()">✕</button>
+    <div id="sbContent"></div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+<script>
+var LANGS={tr:{flag:'🇹🇷',name:'Türkçe'},en:{flag:'🇬🇧',name:'English'},de:{flag:'🇩🇪',name:'Deutsch'},fr:{flag:'🇫🇷',name:'Français'},es:{flag:'🇪🇸',name:'Español'},id:{flag:'🇮🇩',name:'Indonesia'}};
+
+var TR={
+  tr:{Yaz:'Yaz',Oku:'Oku',Mesaj:'Mesaj',Onayla:'Onayla',GirdiAl:'GirdiAl',SayiAl:'SayiAl',Sayi:'Sayi',Ondalik:'Ondalik',Metin:'Metin',Mantiksal:'Mantiksal',Dizi:'Dizi',Varyant:'Varyant',Eger:'Eger',Ise:'Ise',Degilse:'Degilse',EgerBitti:'EgerBitti',Tekrarla:'Tekrarla',Kez:'Kez',TekrarlaBitti:'TekrarlaBitti',Dongu:'Dongu',DonguBitti:'DonguBitti',To:'To',Adim:'Adim',Suresince:'Suresince',SuresinceBitti:'SuresinceBitti',Fonksiyon:'Fonksiyon',FonksiyonBitti:'FonksiyonBitti',Don:'Don',Rastgele:'Rastgele',Uzunluk:'Uzunluk',Yuvarla:'Yuvarla',BuyukHarf:'BuyukHarf',KucukHarf:'KucukHarf',MetinBol:'MetinBol',MetinKes:'MetinKes',DiziEkle:'DiziEkle',DiziCikar:'DiziCikar',DiziBul:'DiziBul',DiziSirala:'DiziSirala',Pencere:'Pencere',Dugme:'Dugme',Etiket:'Etiket',GirisSatiri:'GirisSatiri',Kanvas:'Kanvas',Kanvas3D:'Kanvas3D',Ses:'Ses',Zamanlayici:'Zamanlayici',KaynakAl:'KaynakAl',ResimYukle:'ResimYukle',ResimCiz:'ResimCiz',KanvasDaire:'KanvasDaire',KanvasDikdortgen:'KanvasDikdortgen',KanvasCizgi:'KanvasCizgi',KanvasMetin:'KanvasMetin',KanvasArkaplan:'KanvasArkaplan',KanvasTemizle:'KanvasTemizle',Kanvas3DKup:'Kanvas3DKup',Kanvas3DKure:'Kanvas3DKure',Kanvas3DSilindir:'Kanvas3DSilindir',MuzikCal:'MuzikCal',MuzikDurdur:'MuzikDurdur',Simdi:'Simdi',TarihGun:'TarihGun',TarihAy:'TarihAy',TarihYil:'TarihYil',JSONOlustur:'JSONOlustur',JSONOku:'JSONOku',Goster:'Goster',Gizle:'Gizle',Ekle:'Ekle',Baslat:'Baslat',Durdur:'Durdur'},
+  en:{Yaz:'Print',Oku:'Read',Mesaj:'Message',Onayla:'Confirm',GirdiAl:'GetInput',SayiAl:'GetNumber',Sayi:'Integer',Ondalik:'Decimal',Metin:'String',Mantiksal:'Boolean',Dizi:'Array',Varyant:'Variant',Eger:'If',Ise:'Then',Degilse:'Else',EgerBitti:'EndIf',Tekrarla:'Repeat',Kez:'Times',TekrarlaBitti:'EndRepeat',Dongu:'Loop',DonguBitti:'EndLoop',To:'To',Adim:'Step',Suresince:'While',SuresinceBitti:'EndWhile',Fonksiyon:'Function',FonksiyonBitti:'EndFunction',Don:'Return',Rastgele:'Random',Uzunluk:'Length',Yuvarla:'Round',BuyukHarf:'UpperCase',KucukHarf:'LowerCase',MetinBol:'SplitString',MetinKes:'Substring',DiziEkle:'ArrayAdd',DiziCikar:'ArrayRemove',DiziBul:'ArrayFind',DiziSirala:'ArraySort',Pencere:'Window',Dugme:'Button',Etiket:'Label',GirisSatiri:'TextInput',Kanvas:'Canvas',Kanvas3D:'Canvas3D',Ses:'Sound',Zamanlayici:'Timer',KaynakAl:'GetResource',ResimYukle:'LoadImage',ResimCiz:'DrawImage',KanvasDaire:'CanvasCircle',KanvasDikdortgen:'CanvasRect',KanvasCizgi:'CanvasLine',KanvasMetin:'CanvasText',KanvasArkaplan:'CanvasBg',KanvasTemizle:'CanvasClear',Kanvas3DKup:'Canvas3DCube',Kanvas3DKure:'Canvas3DSphere',Kanvas3DSilindir:'Canvas3DCylinder',MuzikCal:'MusicPlay',MuzikDurdur:'MusicStop',Simdi:'Now',TarihGun:'DateDay',TarihAy:'DateMonth',TarihYil:'DateYear',JSONOlustur:'JSONCreate',JSONOku:'JSONRead',Goster:'Show',Gizle:'Hide',Ekle:'Add',Baslat:'Start',Durdur:'Stop'},
+  de:{Yaz:'Schreiben',Oku:'Lesen',Mesaj:'Nachricht',Onayla:'Bestaetigen',GirdiAl:'EingabeHolen',SayiAl:'ZahlHolen',Sayi:'Zahl',Ondalik:'Dezimal',Metin:'Text',Mantiksal:'Wahrheit',Dizi:'Liste',Varyant:'Variante',Eger:'Wenn',Ise:'Dann',Degilse:'Sonst',EgerBitti:'WennEnde',Tekrarla:'Wiederholen',Kez:'Mal',TekrarlaBitti:'WiederholenEnde',Dongu:'Schleife',DonguBitti:'SchleifEnde',To:'Bis',Adim:'Schritt',Suresince:'Solange',SuresinceBitti:'SolangeEnde',Fonksiyon:'Funktion',FonksiyonBitti:'FunktionEnde',Don:'Zurueck',Rastgele:'Zufaellig',Uzunluk:'Laenge',Yuvarla:'Runden',BuyukHarf:'GrossSchrift',KucukHarf:'KleinSchrift',MetinBol:'TextTeilen',MetinKes:'Teiltext',DiziEkle:'ListeHinzufuegen',DiziCikar:'ListeEntfernen',DiziBul:'ListeFinden',DiziSirala:'ListeSortieren',Pencere:'Fenster',Dugme:'Schaltflaeche',Etiket:'Bezeichnung',GirisSatiri:'Texteingabe',Kanvas:'Leinwand',Kanvas3D:'Leinwand3D',Ses:'Ton',Zamanlayici:'Zeitgeber',KaynakAl:'RessourceHolen',ResimYukle:'BildLaden',ResimCiz:'BildZeichnen',KanvasDaire:'LeinwandKreis',KanvasDikdortgen:'LeinwandRechteck',KanvasCizgi:'LeinwandLinie',KanvasMetin:'LeinwandText',KanvasArkaplan:'LeinwandHintergrund',KanvasTemizle:'LeinwandLeeren',Kanvas3DKup:'Leinwand3DWuerfel',Kanvas3DKure:'Leinwand3DKugel',Kanvas3DSilindir:'Leinwand3DZylinder',MuzikCal:'MusikAbspielen',MuzikDurdur:'MusikStoppen',Simdi:'Jetzt',TarihGun:'DatumTag',TarihAy:'DatumMonat',TarihYil:'DatumJahr',JSONOlustur:'JSONErstellen',JSONOku:'JSONLesen',Goster:'Anzeigen',Gizle:'Verstecken',Ekle:'Hinzufuegen',Baslat:'Starten',Durdur:'Stoppen'},
+  fr:{Yaz:'Ecrire',Oku:'Lire',Mesaj:'Message',Onayla:'Confirmer',GirdiAl:'ObtenirEntree',SayiAl:'ObtenirNombre',Sayi:'Entier',Ondalik:'Decimal',Metin:'Texte',Mantiksal:'Booleen',Dizi:'Tableau',Varyant:'Variante',Eger:'Si',Ise:'Alors',Degilse:'Sinon',EgerBitti:'FinSi',Tekrarla:'Repeter',Kez:'Fois',TekrarlaBitti:'FinRepeter',Dongu:'Boucle',DonguBitti:'FinBoucle',To:'A',Adim:'Pas',Suresince:'TantQue',SuresinceBitti:'FinTantQue',Fonksiyon:'Fonction',FonksiyonBitti:'FinFonction',Don:'Retourner',Rastgele:'Aleatoire',Uzunluk:'Longueur',Yuvarla:'Arrondir',BuyukHarf:'Majuscules',KucukHarf:'Minuscules',MetinBol:'DecoupeTexte',MetinKes:'SousTexte',DiziEkle:'TableauAjouter',DiziCikar:'TableauSupprimer',DiziBul:'TableauTrouver',DiziSirala:'TableauTrier',Pencere:'Fenetre',Dugme:'Bouton',Etiket:'Etiquette',GirisSatiri:'ChampTexte',Kanvas:'Canevas',Kanvas3D:'Canevas3D',Ses:'Son',Zamanlayici:'Minuterie',KaynakAl:'ObtenirRessource',ResimYukle:'ChargerImage',ResimCiz:'DessinerImage',KanvasDaire:'CanevasCercle',KanvasDikdortgen:'CanevaseRectangle',KanvasCizgi:'CanevasLigne',KanvasMetin:'CanevasTexte',KanvasArkaplan:'CanevasFond',KanvasTemizle:'CanevasEffacer',Kanvas3DKup:'Canevas3DCube',Kanvas3DKure:'Canevas3DSphere',Kanvas3DSilindir:'Canevas3DCylindre',MuzikCal:'JouerMusique',MuzikDurdur:'ArreterMusique',Simdi:'Maintenant',TarihGun:'DateJour',TarihAy:'DateMois',TarihYil:'DateAnnee',JSONOlustur:'JSONCreer',JSONOku:'JSONLire',Goster:'Afficher',Gizle:'Masquer',Ekle:'Ajouter',Baslat:'Demarrer',Durdur:'Arreter'},
+  es:{Yaz:'Escribir',Oku:'Leer',Mesaj:'Mensaje',Onayla:'Confirmar',GirdiAl:'ObtenerEntrada',SayiAl:'ObtenerNumero',Sayi:'Entero',Ondalik:'Decimal',Metin:'Texto',Mantiksal:'Booleano',Dizi:'Arreglo',Varyant:'Variante',Eger:'Si',Ise:'Entonces',Degilse:'SiNo',EgerBitti:'FinSi',Tekrarla:'Repetir',Kez:'Veces',TekrarlaBitti:'FinRepetir',Dongu:'Bucle',DonguBitti:'FinBucle',To:'Hasta',Adim:'Paso',Suresince:'MientrasQue',SuresinceBitti:'FinMientras',Fonksiyon:'Funcion',FonksiyonBitti:'FinFuncion',Don:'Retornar',Rastgele:'Aleatorio',Uzunluk:'Longitud',Yuvarla:'Redondear',BuyukHarf:'Mayusculas',KucukHarf:'Minusculas',MetinBol:'DividirTexto',MetinKes:'Subcadena',DiziEkle:'ArregloAgregar',DiziCikar:'ArregloEliminar',DiziBul:'ArregloBuscar',DiziSirala:'ArregloOrdenar',Pencere:'Ventana',Dugme:'Boton',Etiket:'Etiqueta',GirisSatiri:'EntradaTexto',Kanvas:'Lienzo',Kanvas3D:'Lienzo3D',Ses:'Sonido',Zamanlayici:'Temporizador',KaynakAl:'ObtenerRecurso',ResimYukle:'CargarImagen',ResimCiz:'DibujarImagen',KanvasDaire:'LienzoCirculo',KanvasDikdortgen:'LienzoRectangulo',KanvasCizgi:'LienzoLinea',KanvasMetin:'LienzoTexto',KanvasArkaplan:'LienzoFondo',KanvasTemizle:'LienzoLimpiar',Kanvas3DKup:'Lienzo3DCubo',Kanvas3DKure:'Lienzo3DEsfera',Kanvas3DSilindir:'Lienzo3DCilindro',MuzikCal:'ReproducirMusica',MuzikDurdur:'DetenerMusica',Simdi:'Ahora',TarihGun:'FechaDia',TarihAy:'FechaMes',TarihYil:'FechaAnio',JSONOlustur:'JSONCrear',JSONOku:'JSONLeer',Goster:'Mostrar',Gizle:'Ocultar',Ekle:'Agregar',Baslat:'Iniciar',Durdur:'Detener'},
+  id:{Yaz:'Tulis',Oku:'Baca',Mesaj:'Pesan',Onayla:'Konfirmasi',GirdiAl:'AmbilMasukan',SayiAl:'AmbilAngka',Sayi:'Bilangan',Ondalik:'Desimal',Metin:'Teks',Mantiksal:'Boolean',Dizi:'Larik',Varyant:'Varian',Eger:'Jika',Ise:'Maka',Degilse:'SinoJika',EgerBitti:'AkhirJika',Tekrarla:'Ulangi',Kez:'Kali',TekrarlaBitti:'AkhirUlangi',Dongu:'Perulangan',DonguBitti:'AkhirPerulangan',To:'Sampai',Adim:'Langkah',Suresince:'Selama',SuresinceBitti:'AkhirSelama',Fonksiyon:'Fungsi',FonksiyonBitti:'AkhirFungsi',Don:'Kembalikan',Rastgele:'Acak',Uzunluk:'Panjang',Yuvarla:'Bulatkan',BuyukHarf:'HurufBesar',KucukHarf:'HurufKecil',MetinBol:'PecahTeks',MetinKes:'SubTeks',DiziEkle:'LarikTambah',DiziCikar:'LarikHapus',DiziBul:'LarikCari',DiziSirala:'LarikUrutkan',Pencere:'Jendela',Dugme:'Tombol',Etiket:'Label',GirisSatiri:'MasukanTeks',Kanvas:'Kanvas',Kanvas3D:'Kanvas3D',Ses:'Suara',Zamanlayici:'Pengatur',KaynakAl:'AmbilSumber',ResimYukle:'MuatGambar',ResimCiz:'GambarGambar',KanvasDaire:'KanvasLingkaran',KanvasDikdortgen:'KanvasPersegiPanjang',KanvasCizgi:'KanvasGaris',KanvasMetin:'KanvasTeks',KanvasArkaplan:'KanvasLatar',KanvasTemizle:'KanvasBersih',Kanvas3DKup:'Kanvas3DKubus',Kanvas3DKure:'Kanvas3DBola',Kanvas3DSilindir:'Kanvas3DSilinder',MuzikCal:'MainkanMusik',MuzikDurdur:'BerhentiMusik',Simdi:'Sekarang',TarihGun:'TanggalHari',TarihAy:'TanggalBulan',TarihYil:'TanggalTahun',JSONOlustur:'JSONBuat',JSONOku:'JSONBaca',Goster:'Tampilkan',Gizle:'Sembunyikan',Ekle:'Tambah',Baslat:'Mulai',Durdur:'Berhenti'}
+};
+
+function kw(k){return (TR[_lang]&&TR[_lang][k])||TR.tr[k]||k;}
+
+// Açıklamalar — her dilde
+var DESC={
+  // VERİ TİPLERİ
+  Sayi:{tr:'Tam sayı değişkeni tanımlar.',en:'Defines an integer variable.',de:'Definiert eine Ganzzahlvariable.',fr:'Définit une variable entière.',es:'Define una variable entera.',id:'Mendefinisikan variabel bilangan bulat.'},
+  Ondalik:{tr:'Ondalıklı sayı değişkeni tanımlar.',en:'Defines a decimal/float variable.',de:'Definiert eine Dezimalzahlvariable.',fr:'Définit une variable décimale.',es:'Define una variable decimal.',id:'Mendefinisikan variabel desimal.'},
+  Metin:{tr:'Metin (string) değişkeni tanımlar.',en:'Defines a text/string variable.',de:'Definiert eine Textvariable.',fr:'Définit une variable texte.',es:'Define una variable de texto.',id:'Mendefinisikan variabel teks.'},
+  Mantiksal:{tr:'Doğru/Yanlış değer taşıyan boolean değişkeni.',en:'Defines a boolean (true/false) variable.',de:'Definiert eine boolesche Variable.',fr:'Définit une variable booléenne.',es:'Define una variable booleana.',id:'Mendefinisikan variabel boolean.'},
+  Dizi:{tr:'Birden fazla değer tutan liste/dizi.',en:'An array that holds multiple values.',de:'Ein Array mit mehreren Werten.',fr:'Un tableau contenant plusieurs valeurs.',es:'Un arreglo que contiene múltiples valores.',id:'Larik yang menyimpan beberapa nilai.'},
+  Varyant:{tr:'Her türlü değer alabilen esnek tip.',en:'A flexible type that can hold any value.',de:'Ein flexibler Typ für beliebige Werte.',fr:'Un type flexible pour toute valeur.',es:'Un tipo flexible para cualquier valor.',id:'Tipe fleksibel untuk nilai apa saja.'},
+  // KONTROL
+  Eger:{tr:'Koşullu çalıştırma bloğu.',en:'Conditional execution block.',de:'Bedingter Ausführungsblock.',fr:'Bloc d\'exécution conditionnel.',es:'Bloque de ejecución condicional.',id:'Blok eksekusi kondisional.'},
+  Tekrarla:{tr:'Belirli sayıda tekrarlayan döngü.',en:'Loop that repeats a fixed number of times.',de:'Schleife mit fixer Wiederholungsanzahl.',fr:'Boucle répétant un nombre fixe de fois.',es:'Bucle que repite un número fijo de veces.',id:'Perulangan dengan jumlah tetap.'},
+  Dongu:{tr:'Sayaçlı for döngüsü.',en:'Counter-based for loop.',de:'Zählerbasierte Schleife.',fr:'Boucle avec compteur.',es:'Bucle con contador.',id:'Perulangan berbasis penghitung.'},
+  Suresince:{tr:'Koşul doğru olduğu sürece çalışır.',en:'Runs while the condition is true.',de:'Läuft solange die Bedingung wahr ist.',fr:'S\'exécute tant que la condition est vraie.',es:'Se ejecuta mientras la condición sea verdadera.',id:'Berjalan selama kondisi benar.'},
+  Fonksiyon:{tr:'Yeniden kullanılabilir kod bloğu tanımlar.',en:'Defines a reusable code block.',de:'Definiert einen wiederverwendbaren Codeblock.',fr:'Définit un bloc de code réutilisable.',es:'Define un bloque de código reutilizable.',id:'Mendefinisikan blok kode yang dapat digunakan kembali.'},
+  // GİRİŞ ÇIKIŞ
+  Yaz:{tr:'Konsola değer yazdırır.',en:'Prints a value to the console.',de:'Gibt einen Wert in der Konsole aus.',fr:'Affiche une valeur dans la console.',es:'Imprime un valor en la consola.',id:'Mencetak nilai ke konsol.'},
+  Mesaj:{tr:'Ekranda popup mesaj kutusu gösterir.',en:'Shows a popup message box.',de:'Zeigt ein Popup-Nachrichtenfeld an.',fr:'Affiche une boîte de message popup.',es:'Muestra un cuadro de mensaje emergente.',id:'Menampilkan kotak pesan popup.'},
+  Onayla:{tr:'Evet/Hayır onay kutusu gösterir.',en:'Shows a Yes/No confirmation dialog.',de:'Zeigt einen Ja/Nein-Bestätigungsdialog.',fr:'Affiche une boîte de confirmation Oui/Non.',es:'Muestra un diálogo de confirmación Sí/No.',id:'Menampilkan dialog konfirmasi Ya/Tidak.'},
+  GirdiAl:{tr:'Kullanıcıdan metin girdisi alır.',en:'Gets text input from the user.',de:'Liest eine Texteingabe vom Benutzer.',fr:'Obtient une saisie texte de l\'utilisateur.',es:'Obtiene entrada de texto del usuario.',id:'Mendapatkan masukan teks dari pengguna.'},
+  SayiAl:{tr:'Kullanıcıdan sayısal giriş alır.',en:'Gets a numeric input from the user.',de:'Liest eine Zahleingabe vom Benutzer.',fr:'Obtient une entrée numérique de l\'utilisateur.',es:'Obtiene una entrada numérica del usuario.',id:'Mendapatkan masukan angka dari pengguna.'},
+  // MATEMATİK
+  Rastgele:{tr:'Belirtilen aralıkta rastgele sayı üretir.',en:'Generates a random number in a range.',de:'Erzeugt eine Zufallszahl in einem Bereich.',fr:'Génère un nombre aléatoire dans une plage.',es:'Genera un número aleatorio en un rango.',id:'Menghasilkan angka acak dalam rentang.'},
+  Yuvarla:{tr:'Sayıyı belirtilen basamağa yuvarlar.',en:'Rounds a number to a given decimal place.',de:'Rundet eine Zahl auf eine Stelle.',fr:'Arrondit un nombre à un décimal.',es:'Redondea un número a un decimal.',id:'Membulatkan angka ke desimal tertentu.'},
+  Uzunluk:{tr:'Metin uzunluğunu veya dizi eleman sayısını döndürür.',en:'Returns the length of a string or array.',de:'Gibt die Länge eines Textes oder Arrays zurück.',fr:'Retourne la longueur d\'un texte ou tableau.',es:'Devuelve la longitud de un texto o arreglo.',id:'Mengembalikan panjang teks atau larik.'},
+  // METİN
+  BuyukHarf:{tr:'Metni tamamen büyük harfe çevirir.',en:'Converts text to uppercase.',de:'Wandelt Text in Großbuchstaben um.',fr:'Convertit le texte en majuscules.',es:'Convierte el texto a mayúsculas.',id:'Mengubah teks menjadi huruf besar.'},
+  KucukHarf:{tr:'Metni tamamen küçük harfe çevirir.',en:'Converts text to lowercase.',de:'Wandelt Text in Kleinbuchstaben um.',fr:'Convertit le texte en minuscules.',es:'Convierte el texto a minúsculas.',id:'Mengubah teks menjadi huruf kecil.'},
+  MetinBol:{tr:'Metni ayırıcıya göre parçalara böler.',en:'Splits text by a separator.',de:'Teilt Text anhand eines Trennzeichens.',fr:'Divise le texte par un séparateur.',es:'Divide el texto por un separador.',id:'Memecah teks berdasarkan pemisah.'},
+  MetinKes:{tr:'Metinden belirli aralıktaki karakterleri alır.',en:'Extracts a portion of a string.',de:'Extrahiert einen Teil eines Textes.',fr:'Extrait une portion du texte.',es:'Extrae una parte del texto.',id:'Mengekstrak bagian dari teks.'},
+  // DİZİ
+  DiziEkle:{tr:'Diziye yeni bir eleman ekler.',en:'Adds an element to the array.',de:'Fügt ein Element zum Array hinzu.',fr:'Ajoute un élément au tableau.',es:'Agrega un elemento al arreglo.',id:'Menambahkan elemen ke larik.'},
+  DiziCikar:{tr:'Diziden son elemanı çıkarır.',en:'Removes and returns the last element.',de:'Entfernt das letzte Element.',fr:'Supprime et retourne le dernier élément.',es:'Elimina y devuelve el último elemento.',id:'Menghapus dan mengembalikan elemen terakhir.'},
+  DiziBul:{tr:'Dizide değeri arar, indeksini döndürür.',en:'Searches for a value, returns its index.',de:'Sucht einen Wert, gibt den Index zurück.',fr:'Cherche une valeur, retourne son index.',es:'Busca un valor, devuelve su índice.',id:'Mencari nilai, mengembalikan indeksnya.'},
+  DiziSirala:{tr:'Diziyi artan sırayla sıralar.',en:'Sorts the array in ascending order.',de:'Sortiert das Array aufsteigend.',fr:'Trie le tableau par ordre croissant.',es:'Ordena el arreglo en orden ascendente.',id:'Mengurutkan larik secara ascending.'},
+  // GUI
+  Pencere:{tr:'Uygulama penceresi oluşturur.',en:'Creates an application window.',de:'Erstellt ein Anwendungsfenster.',fr:'Crée une fenêtre d\'application.',es:'Crea una ventana de aplicación.',id:'Membuat jendela aplikasi.'},
+  Dugme:{tr:'Tıklanabilir buton nesnesi.',en:'A clickable button object.',de:'Ein klickbares Schaltflächenobjekt.',fr:'Un objet bouton cliquable.',es:'Un objeto botón clicable.',id:'Objek tombol yang dapat diklik.'},
+  GirisSatiri:{tr:'Tek satır metin giriş alanı.',en:'A single-line text input field.',de:'Ein einzeiliges Texteingabefeld.',fr:'Un champ de saisie texte monoligne.',es:'Un campo de entrada de texto de una línea.',id:'Bidang masukan teks satu baris.'},
+  Ses:{tr:'Ses dosyası yükler ve çalar.',en:'Loads and plays a sound file.',de:'Lädt und spielt eine Audiodatei.',fr:'Charge et joue un fichier audio.',es:'Carga y reproduce un archivo de sonido.',id:'Memuat dan memutar file suara.'},
+  Zamanlayici:{tr:'Belirli aralıklarla kod çalıştırır.',en:'Runs code at regular intervals.',de:'Führt Code in regelmäßigen Abständen aus.',fr:'Exécute du code à intervalles réguliers.',es:'Ejecuta código a intervalos regulares.',id:'Menjalankan kode pada interval tertentu.'},
+  // KANVAS
+  KanvasArkaplan:{tr:'Kanvası belirli renkle doldurur.',en:'Fills the canvas with a color.',de:'Füllt die Leinwand mit einer Farbe.',fr:'Remplit le canevas d\'une couleur.',es:'Rellena el lienzo con un color.',id:'Mengisi kanvas dengan warna.'},
+  KanvasDaire:{tr:'Kanvasa dolu daire çizer.',en:'Draws a filled circle on the canvas.',de:'Zeichnet einen gefüllten Kreis.',fr:'Dessine un cercle plein sur le canevas.',es:'Dibuja un círculo relleno en el lienzo.',id:'Menggambar lingkaran berisi di kanvas.'},
+  KanvasDikdortgen:{tr:'Kanvasa dolu dikdörtgen çizer.',en:'Draws a filled rectangle.',de:'Zeichnet ein gefülltes Rechteck.',fr:'Dessine un rectangle plein.',es:'Dibuja un rectángulo relleno.',id:'Menggambar persegi panjang berisi.'},
+  KanvasCizgi:{tr:'İki nokta arasına çizgi çizer.',en:'Draws a line between two points.',de:'Zeichnet eine Linie zwischen zwei Punkten.',fr:'Dessine une ligne entre deux points.',es:'Dibuja una línea entre dos puntos.',id:'Menggambar garis antara dua titik.'},
+  KanvasMetin:{tr:'Kanvasa metin yazar.',en:'Writes text on the canvas.',de:'Schreibt Text auf die Leinwand.',fr:'Écrit du texte sur le canevas.',es:'Escribe texto en el lienzo.',id:'Menulis teks di kanvas.'},
+  ResimYukle:{tr:'URL veya data URL\'den resim yükler.',en:'Loads an image from URL or data URL.',de:'Lädt ein Bild von einer URL.',fr:'Charge une image depuis une URL.',es:'Carga una imagen desde una URL.',id:'Memuat gambar dari URL.'},
+  // 3D
+  Kanvas3DKup:{tr:'3D kanvasa küp ekler.',en:'Adds a cube to the 3D canvas.',de:'Fügt einen Würfel zur 3D-Leinwand hinzu.',fr:'Ajoute un cube au canevas 3D.',es:'Agrega un cubo al lienzo 3D.',id:'Menambahkan kubus ke kanvas 3D.'},
+  Kanvas3DKure:{tr:'3D kanvasa küre ekler.',en:'Adds a sphere to the 3D canvas.',de:'Fügt eine Kugel zur 3D-Leinwand hinzu.',fr:'Ajoute une sphère au canevas 3D.',es:'Agrega una esfera al lienzo 3D.',id:'Menambahkan bola ke kanvas 3D.'},
+  // KAYNAK
+  KaynakAl:{tr:'SE\'ye eklenmiş kaynağı data URL olarak döndürür.',en:'Returns a resource from SE as a data URL.',de:'Gibt eine Ressource aus SE als Daten-URL zurück.',fr:'Retourne une ressource depuis SE en data URL.',es:'Devuelve un recurso del SE como data URL.',id:'Mengembalikan sumber daya dari SE sebagai data URL.'},
+  // ZAMAN
+  Simdi:{tr:'Geçerli Unix zaman damgasını döndürür.',en:'Returns the current Unix timestamp.',de:'Gibt den aktuellen Unix-Zeitstempel zurück.',fr:'Retourne l\'horodatage Unix actuel.',es:'Devuelve el timestamp Unix actual.',id:'Mengembalikan timestamp Unix saat ini.'},
+  TarihGun:{tr:'Bugünün gün numarasını döndürür (1-31).',en:'Returns today\'s day number (1-31).',de:'Gibt die aktuelle Tagesnummer zurück.',fr:'Retourne le jour actuel (1-31).',es:'Devuelve el número del día actual.',id:'Mengembalikan nomor hari saat ini.'},
+};
+
+function desc(key){return (DESC[key]&&DESC[key][_lang])||DESC[key]&&DESC[key].tr||'';}
+
+// Bölüm başlıkları
+var SEC_TITLES={
+  tipler:{tr:'Değişken Tipleri',en:'Data Types',de:'Datentypen',fr:'Types de données',es:'Tipos de datos',id:'Tipe Data'},
+  kontrol:{tr:'Kontrol Yapıları',en:'Control Flow',de:'Kontrollstrukturen',fr:'Structures de contrôle',es:'Estructuras de control',id:'Alur Kontrol'},
+  fonksiyon:{tr:'Fonksiyonlar',en:'Functions',de:'Funktionen',fr:'Fonctions',es:'Funciones',id:'Fungsi'},
+  io:{tr:'Giriş / Çıkış',en:'Input / Output',de:'Ein-/Ausgabe',fr:'Entrée / Sortie',es:'Entrada / Salida',id:'Masukan / Keluaran'},
+  matematik:{tr:'Matematik',en:'Math',de:'Mathematik',fr:'Mathématiques',es:'Matemáticas',id:'Matematika'},
+  metin:{tr:'Metin İşlemleri',en:'String Operations',de:'Textoperationen',fr:'Opérations sur les chaînes',es:'Operaciones de texto',id:'Operasi Teks'},
+  dizi:{tr:'Dizi İşlemleri',en:'Array Operations',de:'Array-Operationen',fr:'Opérations sur les tableaux',es:'Operaciones de arreglo',id:'Operasi Larik'},
+  gui:{tr:'GUI Nesneleri',en:'GUI Objects',de:'GUI-Objekte',fr:'Objets GUI',es:'Objetos GUI',id:'Objek GUI'},
+  kanvas2d:{tr:'Kanvas 2D',en:'Canvas 2D',de:'Leinwand 2D',fr:'Canevas 2D',es:'Lienzo 2D',id:'Kanvas 2D'},
+  kanvas3d:{tr:'Kanvas 3D',en:'Canvas 3D',de:'Leinwand 3D',fr:'Canevas 3D',es:'Lienzo 3D',id:'Kanvas 3D'},
+  kaynak:{tr:'Kaynak Yönetimi',en:'Resource Management',de:'Ressourcenverwaltung',fr:'Gestion des ressources',es:'Gestión de recursos',id:'Manajemen Sumber Daya'},
+  zaman:{tr:'Zaman & Tarih',en:'Time & Date',de:'Zeit & Datum',fr:'Temps & Date',es:'Tiempo & Fecha',id:'Waktu & Tanggal'},
+  direktif:{tr:'Direktif Sistemi',en:'Directive System',de:'Direktiven-System',fr:'Système de directives',es:'Sistema de directivas',id:'Sistem Direktif'},
+};
+
+// Param açıklamaları
+var PARAM_LABELS={
+  tr:{params:'Parametreler',returns:'Döndürür',props:'Özellikler',methods:'Metodlar',example:'Örnek',translations:'Dil Karşılıkları'},
+  en:{params:'Parameters',returns:'Returns',props:'Properties',methods:'Methods',example:'Example',translations:'Translations'},
+  de:{params:'Parameter',returns:'Rückgabe',props:'Eigenschaften',methods:'Methoden',example:'Beispiel',translations:'Übersetzungen'},
+  fr:{params:'Paramètres',returns:'Retourne',props:'Propriétés',methods:'Méthodes',example:'Exemple',translations:'Traductions'},
+  es:{params:'Parámetros',returns:'Retorna',props:'Propiedades',methods:'Métodos',example:'Ejemplo',translations:'Traducciones'},
+  id:{params:'Parameter',returns:'Mengembalikan',props:'Properti',methods:'Metode',example:'Contoh',translations:'Terjemahan'},
+};
+
+function pl(k){return (PARAM_LABELS[_lang]&&PARAM_LABELS[_lang][k])||PARAM_LABELS.tr[k]||k;}
+function st(id){return (SEC_TITLES[id]&&SEC_TITLES[id][_lang])||SEC_TITLES[id].tr||id;}
+
+function getData(){return [
+{id:'tipler',icon:'📦',entries:[
+  {key:'Sayi',tag:'tip',params:[{n:'ad',t:'—',d:'değişken adı'},{n:'= değer',t:'?',d:'başlangıç değeri'}],langs:['Sayi'],
+   code:`<span class="type">${kw('Sayi')}</span> x = <span class="num">10</span>;\n<span class="type">${kw('Sayi')}</span> toplam = <span class="num">0</span>;`},
+  {key:'Ondalik',tag:'tip',params:[{n:'ad',t:'—',d:'değişken adı'}],langs:['Ondalik'],
+   code:`<span class="type">${kw('Ondalik')}</span> pi = <span class="num">3.14</span>;`},
+  {key:'Metin',tag:'tip',params:[{n:'ad',t:'—',d:'değişken adı'},{n:'"değer"',t:'?',d:'başlangıç değeri'}],langs:['Metin'],
+   code:`<span class="type">${kw('Metin')}</span> isim = <span class="str">"UniKod"</span>;`},
+  {key:'Mantiksal',tag:'tip',params:[{n:'ad',t:'—',d:'değişken adı'}],langs:['Mantiksal'],
+   code:`<span class="type">${kw('Mantiksal')}</span> aktif = <span class="kw">Dogru</span>;`},
+  {key:'Dizi',tag:'tip',params:[{n:'ad',t:'—',d:'değişken adı'},{n:'[]',t:'?',d:'başlangıç değerleri'}],langs:['Dizi'],
+   code:`<span class="type">${kw('Dizi')}</span> sayilar = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];`},
+  {key:'Varyant',tag:'tip',params:[{n:'ad',t:'—',d:'değişken adı'}],langs:['Varyant'],
+   code:`<span class="type">${kw('Varyant')}</span> birSey = <span class="str">"merhaba"</span>;`},
+]},
+{id:'kontrol',icon:'🔀',entries:[
+  {key:'Eger',tag:'kw',params:[{n:'koşul',t:'Mantiksal',d:'değerlendirilen ifade'}],langs:['Eger','Ise','Degilse','EgerBitti'],
+   code:`<span class="kw">${kw('Eger')}</span> x > <span class="num">5</span> <span class="kw">${kw('Ise')}</span>\n  <span class="fn">${kw('Yaz')}</span>(<span class="str">"Büyük"</span>);\n<span class="kw">${kw('Degilse')}</span>\n  <span class="fn">${kw('Yaz')}</span>(<span class="str">"Küçük"</span>);\n<span class="kw">${kw('EgerBitti')}</span>`},
+  {key:'Tekrarla',tag:'kw',params:[{n:'sayı',t:'Sayi',d:'tekrar sayısı'}],langs:['Tekrarla','Kez','TekrarlaBitti'],
+   code:`<span class="kw">${kw('Tekrarla')}</span> <span class="num">5</span> <span class="kw">${kw('Kez')}</span>\n  <span class="fn">${kw('Yaz')}</span>(<span class="str">"Merhaba!"</span>);\n<span class="kw">${kw('TekrarlaBitti')}</span>`},
+  {key:'Dongu',tag:'kw',params:[{n:'i',t:'Sayi',d:'sayaç'},{n:'başlangıç',t:'Sayi',d:'başlangıç'},{n:'To bitiş',t:'Sayi',d:'bitiş'},{n:'Adim',t:'?',d:'artış'}],langs:['Dongu','To','Adim','DonguBitti'],
+   code:`<span class="kw">${kw('Dongu')}</span> i = <span class="num">1</span> <span class="kw">${kw('To')}</span> <span class="num">10</span>\n  <span class="fn">${kw('Yaz')}</span>(i);\n<span class="kw">${kw('DonguBitti')}</span>`},
+  {key:'Suresince',tag:'kw',params:[{n:'koşul',t:'Mantiksal',d:'döngü koşulu'}],langs:['Suresince','SuresinceBitti'],
+   code:`<span class="kw">${kw('Suresince')}</span> x < <span class="num">10</span>\n  x = x + <span class="num">1</span>;\n<span class="kw">${kw('SuresinceBitti')}</span>`},
+]},
+{id:'fonksiyon',icon:'⚡',entries:[
+  {key:'Fonksiyon',tag:'kw',params:[{n:'ad',t:'—',d:'fonksiyon adı'},{n:'parametreler',t:'?',d:'virgülle ayrılmış'}],langs:['Fonksiyon','FonksiyonBitti','Don'],
+   code:`<span class="kw">${kw('Fonksiyon')}</span> Topla(a, b)\n  <span class="kw">${kw('Don')}</span> a + b;\n<span class="kw">${kw('FonksiyonBitti')}</span>\n\n<span class="fn">${kw('Yaz')}</span>(Topla(<span class="num">3</span>, <span class="num">4</span>)); <span class="cm">// 7</span>`},
+]},
+{id:'io',icon:'💬',entries:[
+  {key:'Yaz',tag:'fn',params:[{n:'değer',t:'Varyant',d:'yazdırılacak değer'}],ret:{type:'—',desc:''},langs:['Yaz'],
+   code:`<span class="fn">${kw('Yaz')}</span>(<span class="str">"Merhaba Dünya"</span>);\n<span class="fn">${kw('Yaz')}</span>(x, <span class="str">" = "</span>, toplam);`},
+  {key:'Mesaj',tag:'fn',params:[{n:'metin',t:'Metin',d:'gösterilecek mesaj'}],ret:{type:'—',desc:''},langs:['Mesaj'],
+   code:`<span class="fn">${kw('Mesaj')}</span>(<span class="str">"İşlem tamamlandı!"</span>);`},
+  {key:'Onayla',tag:'fn',params:[{n:'soru',t:'Metin',d:'sorulacak soru'}],ret:{type:'Mantiksal',desc:'Evet → Dogru'},langs:['Onayla'],
+   code:`<span class="type">${kw('Mantiksal')}</span> c = <span class="fn">${kw('Onayla')}</span>(<span class="str">"Silmek istiyor musunuz?"</span>);\n<span class="kw">${kw('Eger')}</span> c <span class="kw">${kw('Ise')}</span> <span class="fn">${kw('Yaz')}</span>(<span class="str">"Silindi"</span>); <span class="kw">${kw('EgerBitti')}</span>`},
+  {key:'GirdiAl',tag:'fn',params:[{n:'soru',t:'Metin',d:'kullanıcıya gösterilecek soru'}],ret:{type:'Metin',desc:''},langs:['GirdiAl'],
+   code:`<span class="type">${kw('Metin')}</span> ad = <span class="fn">${kw('GirdiAl')}</span>(<span class="str">"Adınız?"</span>);\n<span class="fn">${kw('Yaz')}</span>(<span class="str">"Merhaba, "</span> + ad);`},
+  {key:'SayiAl',tag:'fn',params:[{n:'soru',t:'Metin',d:'kullanıcıya gösterilecek soru'}],ret:{type:'Sayi',desc:''},langs:['SayiAl'],
+   code:`<span class="type">${kw('Sayi')}</span> yas = <span class="fn">${kw('SayiAl')}</span>(<span class="str">"Kaç yaşındasınız?"</span>);\n<span class="fn">${kw('Yaz')}</span>(yas);`},
+]},
+{id:'matematik',icon:'🔢',entries:[
+  {key:'Rastgele',tag:'fn',params:[{n:'min',t:'Sayi',d:'en küçük'},{n:'maks',t:'Sayi',d:'en büyük'}],ret:{type:'Sayi',desc:''},langs:['Rastgele'],
+   code:`<span class="type">${kw('Sayi')}</span> zar = <span class="fn">${kw('Rastgele')}</span>(<span class="num">1</span>, <span class="num">6</span>);\n<span class="fn">${kw('Yaz')}</span>(zar);`},
+  {key:'Yuvarla',tag:'fn',params:[{n:'sayi',t:'Ondalik',d:'yuvarlanacak'},{n:'basamak',t:'?',d:'ondalık basamak'}],ret:{type:'Ondalik',desc:''},langs:['Yuvarla'],
+   code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">${kw('Yuvarla')}</span>(<span class="num">3.456</span>, <span class="num">2</span>)); <span class="cm">// 3.46</span>`},
+  {key:'Uzunluk',tag:'fn',params:[{n:'değer',t:'Metin|Dizi',d:'ölçülecek değer'}],ret:{type:'Sayi',desc:''},langs:['Uzunluk'],
+   code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">Uzunluk</span>(<span class="str">"Merhaba"</span>)); <span class="cm">// 7</span>`},
+]},
+{id:'metin',icon:'📝',entries:[
+  {key:'BuyukHarf',tag:'fn',params:[{n:'metin',t:'Metin',d:''}],ret:{type:'Metin',desc:''},langs:['BuyukHarf'],
+   code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">${kw('BuyukHarf')}</span>(<span class="str">"merhaba"</span>)); <span class="cm">// MERHABA</span>`},
+  {key:'KucukHarf',tag:'fn',params:[{n:'metin',t:'Metin',d:''}],ret:{type:'Metin',desc:''},langs:['KucukHarf'],
+   code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">${kw('KucukHarf')}</span>(<span class="str">"MERHABA"</span>)); <span class="cm">// merhaba</span>`},
+  {key:'MetinBol',tag:'fn',params:[{n:'metin',t:'Metin',d:'bölünecek'},{n:'ayirici',t:'Metin',d:'bölme karakteri'}],ret:{type:'Dizi',desc:''},langs:['MetinBol'],
+   code:`<span class="type">${kw('Dizi')}</span> p = <span class="fn">${kw('MetinBol')}</span>(<span class="str">"a,b,c"</span>, <span class="str">","</span>);\n<span class="fn">${kw('Yaz')}</span>(p[<span class="num">0</span>]); <span class="cm">// a</span>`},
+  {key:'MetinKes',tag:'fn',params:[{n:'metin',t:'Metin',d:'kaynak'},{n:'başlangıç',t:'Sayi',d:'başlangıç indeksi'},{n:'uzunluk',t:'Sayi',d:'karakter sayısı'}],ret:{type:'Metin',desc:''},langs:['MetinKes'],
+   code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">${kw('MetinKes')}</span>(<span class="str">"Merhaba"</span>, <span class="num">0</span>, <span class="num">3</span>)); <span class="cm">// Mer</span>`},
+]},
+{id:'dizi',icon:'📋',entries:[
+  {key:'DiziEkle',tag:'fn',params:[{n:'dizi',t:'Dizi',d:'hedef dizi'},{n:'değer',t:'Varyant',d:'eklenecek'}],ret:{type:'—',desc:''},langs:['DiziEkle'],
+   code:`<span class="type">${kw('Dizi')}</span> l = [<span class="num">1</span>,<span class="num">2</span>];\n<span class="fn">${kw('DiziEkle')}</span>(l, <span class="num">3</span>);\n<span class="fn">${kw('Yaz')}</span>(l); <span class="cm">// [1,2,3]</span>`},
+  {key:'DiziCikar',tag:'fn',params:[{n:'dizi',t:'Dizi',d:'hedef dizi'}],ret:{type:'Varyant',desc:'son eleman'},langs:['DiziCikar'],
+   code:`<span class="type">${kw('Varyant')}</span> son = <span class="fn">${kw('DiziCikar')}</span>(l);\n<span class="fn">${kw('Yaz')}</span>(son); <span class="cm">// 3</span>`},
+  {key:'DiziBul',tag:'fn',params:[{n:'dizi',t:'Dizi',d:'aranacak'},{n:'değer',t:'Varyant',d:'aranan'}],ret:{type:'Sayi',desc:'-1 = bulunamadı'},langs:['DiziBul'],
+   code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">${kw('DiziBul')}</span>([<span class="num">10</span>,<span class="num">20</span>,<span class="num">30</span>], <span class="num">20</span>)); <span class="cm">// 1</span>`},
+  {key:'DiziSirala',tag:'fn',params:[{n:'dizi',t:'Dizi',d:'sıralanacak'}],ret:{type:'Dizi',desc:'sıralanmış'},langs:['DiziSirala'],
+   code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">${kw('DiziSirala')}</span>([<span class="num">3</span>,<span class="num">1</span>,<span class="num">2</span>])); <span class="cm">// [1,2,3]</span>`},
+]},
+{id:'gui',icon:'🖥️',entries:[
+  {key:'Pencere',tag:'oz',params:[],langs:['Pencere'],
+   props:[{n:'baslik',t:'Metin',d:'pencere başlığı'},{n:'genislik',t:'Sayi',d:'piksel genişlik'},{n:'yukseklik',t:'Sayi',d:'piksel yükseklik'},{n:'arkaplan',t:'Metin',d:'CSS renk'},{n:'kapatilinca',t:'Fonksiyon',d:'kapatma olayı'}],
+   methods:[{n:kw('Ekle')+'(nesne)',d:'nesne ekle'},{n:kw('Goster')+'()',d:'göster'},{n:kw('Gizle')+'()',d:'gizle'}],
+   code:`<span class="type">${kw('Pencere')}</span> pen;\npen.baslik = <span class="str">"Uygulamam"</span>;\npen.genislik = <span class="num">400</span>; pen.yukseklik = <span class="num">300</span>;\npen.<span class="fn">${kw('Ekle')}</span>(btn);\npen.<span class="fn">${kw('Goster')}</span>();`},
+  {key:'Dugme',tag:'oz',params:[],langs:['Dugme'],
+   props:[{n:'yazi',t:'Metin',d:'buton yazısı'},{n:'x',t:'Sayi',d:'x konum'},{n:'y',t:'Sayi',d:'y konum'},{n:'genislik',t:'Sayi',d:'genişlik'},{n:'yukseklik',t:'Sayi',d:'yükseklik'},{n:'tiklaninca',t:'Fonksiyon',d:'tıklama olayı'},{n:'stil',t:'Metin',d:'CSS stili'}],
+   methods:[{n:kw('Goster')+'()',d:'göster'},{n:kw('Gizle')+'()',d:'gizle'}],
+   code:`<span class="type">${kw('Dugme')}</span> btn;\nbtn.yazi = <span class="str">"Tıkla!"</span>;\nbtn.tiklaninca = <span class="kw">${kw('Fonksiyon')}</span>()\n  <span class="fn">${kw('Mesaj')}</span>(<span class="str">"Merhaba!"</span>);\n<span class="kw">${kw('FonksiyonBitti')}</span>`},
+  {key:'GirisSatiri',tag:'oz',params:[],langs:['GirisSatiri'],
+   props:[{n:'deger',t:'Metin',d:'içerik'},{n:'ipucu',t:'Metin',d:'placeholder'},{n:'x',t:'Sayi',d:'x'},{n:'y',t:'Sayi',d:'y'},{n:'degisince',t:'Fonksiyon',d:'değişince'},{n:'enterasilinca',t:'Fonksiyon',d:'Enter tuşu'}],
+   methods:[],
+   code:`<span class="type">${kw('GirisSatiri')}</span> gi;\ngi.ipucu = <span class="str">"Adınızı girin..."</span>;\ngi.degisince = <span class="kw">${kw('Fonksiyon')}</span>()\n  <span class="fn">${kw('Yaz')}</span>(gi.deger);\n<span class="kw">${kw('FonksiyonBitti')}</span>`},
+  {key:'Ses',tag:'oz',params:[],langs:['Ses'],
+   props:[{n:'kaynak',t:'Metin',d:'KaynakAl() ile data URL'}],
+   methods:[{n:kw('Baslat')+'()',d:'başlat'},{n:kw('Durdur')+'()',d:'durdur'}],
+   code:`<span class="type">${kw('Ses')}</span> s;\ns.kaynak = <span class="fn">${kw('KaynakAl')}</span>(<span class="str">"muzik.wav"</span>);\ns.<span class="fn">${kw('Baslat')}</span>();`},
+  {key:'Zamanlayici',tag:'oz',params:[],langs:['Zamanlayici'],
+   props:[{n:'aralik',t:'Sayi',d:'milisaniye'},{n:'her_tikta',t:'Fonksiyon',d:'her tetiklemede'}],
+   methods:[{n:kw('Baslat')+'()',d:'başlat'},{n:kw('Durdur')+'()',d:'durdur'}],
+   code:`<span class="type">${kw('Zamanlayici')}</span> z;\nz.aralik = <span class="num">1000</span>;\nz.her_tikta = <span class="kw">${kw('Fonksiyon')}</span>()\n  <span class="fn">${kw('Yaz')}</span>(<span class="str">"Tik!"</span>);\n<span class="kw">${kw('FonksiyonBitti')}</span>\nz.<span class="fn">${kw('Baslat')}</span>();`},
+]},
+{id:'kanvas2d',icon:'🎨',entries:[
+  {key:'KanvasArkaplan',tag:'fn',params:[{n:'kanvas',t:'Kanvas',d:'hedef'},{n:'renk',t:'Metin',d:'CSS renk'}],ret:{type:'—',desc:''},langs:['KanvasArkaplan'],code:`<span class="fn">${kw('KanvasArkaplan')}</span>(kv, <span class="str">"#1a1a2e"</span>);`},
+  {key:'KanvasDaire',tag:'fn',params:[{n:'kanvas',t:'Kanvas',d:''},{n:'x',t:'Sayi',d:'merkez x'},{n:'y',t:'Sayi',d:'merkez y'},{n:'yarıçap',t:'Sayi',d:''},{n:'renk',t:'Metin',d:''}],ret:{type:'—',desc:''},langs:['KanvasDaire'],code:`<span class="fn">${kw('KanvasDaire')}</span>(kv, <span class="num">150</span>, <span class="num">150</span>, <span class="num">80</span>, <span class="str">"#e94560"</span>);`},
+  {key:'KanvasDikdortgen',tag:'fn',params:[{n:'kanvas',t:'Kanvas',d:''},{n:'x',t:'Sayi',d:''},{n:'y',t:'Sayi',d:''},{n:'g',t:'Sayi',d:'genişlik'},{n:'y',t:'Sayi',d:'yükseklik'},{n:'renk',t:'Metin',d:''}],ret:{type:'—',desc:''},langs:['KanvasDikdortgen'],code:`<span class="fn">${kw('KanvasDikdortgen')}</span>(kv, <span class="num">50</span>, <span class="num">50</span>, <span class="num">100</span>, <span class="num">60</span>, <span class="str">"#0f3460"</span>);`},
+  {key:'KanvasCizgi',tag:'fn',params:[{n:'kanvas',t:'Kanvas',d:''},{n:'x1',t:'Sayi',d:''},{n:'y1',t:'Sayi',d:''},{n:'x2',t:'Sayi',d:''},{n:'y2',t:'Sayi',d:''},{n:'renk',t:'Metin',d:''}],ret:{type:'—',desc:''},langs:['KanvasCizgi'],code:`<span class="fn">${kw('KanvasCizgi')}</span>(kv, <span class="num">0</span>, <span class="num">0</span>, <span class="num">300</span>, <span class="num">300</span>, <span class="str">"#fff"</span>);`},
+  {key:'KanvasMetin',tag:'fn',params:[{n:'kanvas',t:'Kanvas',d:''},{n:'metin',t:'Metin',d:''},{n:'x',t:'Sayi',d:''},{n:'y',t:'Sayi',d:''},{n:'renk',t:'Metin',d:''},{n:'font',t:'?',d:'CSS font'}],ret:{type:'—',desc:''},langs:['KanvasMetin'],code:`<span class="fn">${kw('KanvasMetin')}</span>(kv, <span class="str">"UniKod!"</span>, <span class="num">100</span>, <span class="num">200</span>, <span class="str">"#ffd700"</span>, <span class="str">"20px bold"</span>);`},
+  {key:'ResimYukle',tag:'fn',params:[{n:'url',t:'Metin',d:'URL veya KaynakAl()'}],ret:{type:'Varyant',desc:'resim nesnesi'},langs:['ResimYukle'],code:`<span class="type">${kw('Varyant')}</span> img = <span class="fn">${kw('ResimYukle')}</span>(<span class="fn">${kw('KaynakAl')}</span>(<span class="str">"foto.png"</span>));\n<span class="fn">${kw('ResimCiz')}</span>(kv, img, <span class="num">0</span>, <span class="num">0</span>, <span class="num">300</span>, <span class="num">300</span>);`},
+]},
+{id:'kanvas3d',icon:'🎲',entries:[
+  {key:'Kanvas3DKup',tag:'fn',params:[{n:'kanvas',t:'Kanvas3D',d:''},{n:'x',t:'Sayi',d:''},{n:'y',t:'Sayi',d:''},{n:'z',t:'Sayi',d:''},{n:'boyut',t:'Sayi',d:''},{n:'renk',t:'Metin',d:''}],ret:{type:'Varyant',desc:'3D nesne'},langs:['Kanvas3DKup'],code:`<span class="type">${kw('Varyant')}</span> kup = <span class="fn">${kw('Kanvas3DKup')}</span>(sahne, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">2</span>, <span class="str">"#4f9eff"</span>);`},
+  {key:'Kanvas3DKure',tag:'fn',params:[{n:'kanvas',t:'Kanvas3D',d:''},{n:'x',t:'Sayi',d:''},{n:'y',t:'Sayi',d:''},{n:'z',t:'Sayi',d:''},{n:'yarıçap',t:'Sayi',d:''},{n:'renk',t:'Metin',d:''}],ret:{type:'Varyant',desc:'3D nesne'},langs:['Kanvas3DKure'],code:`<span class="type">${kw('Varyant')}</span> top = <span class="fn">${kw('Kanvas3DKure')}</span>(sahne, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="str">"#ff4f4f"</span>);`},
+]},
+{id:'kaynak',icon:'📂',entries:[
+  {key:'KaynakAl',tag:'fn',params:[{n:'ad',t:'Metin',d:'SE\'deki dosya adı'}],ret:{type:'Metin',desc:'data URL (base64)'},langs:['KaynakAl'],
+   code:`<span class="cm">// Ses</span>\ns.kaynak = <span class="fn">${kw('KaynakAl')}</span>(<span class="str">"muzik.wav"</span>);\n\n<span class="cm">// Resim</span>\n<span class="type">${kw('Varyant')}</span> img = <span class="fn">${kw('ResimYukle')}</span>(<span class="fn">${kw('KaynakAl')}</span>(<span class="str">"foto.png"</span>));`},
+]},
+{id:'zaman',icon:'⏱️',entries:[
+  {key:'Simdi',tag:'fn',params:[],ret:{type:'Sayi',desc:'ms zaman damgası'},langs:['Simdi'],code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">${kw('Simdi')}</span>()); <span class="cm">// 1748638800000</span>`},
+  {key:'TarihGun',tag:'fn',params:[],ret:{type:'Sayi',desc:'1-31'},langs:['TarihGun'],code:`<span class="fn">${kw('Yaz')}</span>(<span class="fn">${kw('TarihGun')}</span>()+<span class="str">"."</span>+<span class="fn">${kw('TarihAy')}</span>()+<span class="str">"."</span>+<span class="fn">${kw('TarihYil')}</span>());`},
+]},
+{id:'direktif',icon:'#️⃣',entries:[
+  {key:'#TR',tag:'kw',params:[{n:'dil kodu',t:'—',d:'TR, EN, DE, FR, ES, ID, UR, JA, ZH...'}],langs:[],
+   code:`<span class="kw">#TR</span>\n<span class="type">Sayi</span> x = <span class="num">5</span>;\n<span class="fn">Yaz</span>(x);\n\n<span class="cm">// Karma dil — aynı projede</span>\n<span class="kw">#EN</span>\n<span class="kw">Function</span> Add(a, b)\n  <span class="kw">Return</span> a + b;\n<span class="kw">EndFunction</span>`},
+]},
+];}
+
+// ══════════════════════════════════════════════
+var _lang='tr', _search='';
+
+function transChips(langs){
+  if(!langs||!langs.length) return '';
+  var h='';
+  Object.keys(LANGS).forEach(function(lk){
+    var words=langs.map(function(k){return TR[lk]&&TR[lk][k]?TR[lk][k]:null;}).filter(Boolean).join(' / ');
+    if(words) h+='<span class="tc"><span class="tf">'+LANGS[lk].flag+'</span><span class="tk">'+words+'</span></span>';
+  });
+  return h;
+}
+
+function renderEntry(e){
+  var k=kw(e.key);
+  var sig=e.params&&e.params.length?'('+e.params.map(function(p){return p.n;}).join(', ')+')':'';
+  var h='<div class="entry"><div class="entry-head"><span class="entry-name">'+k+'</span>';
+  if(sig) h+='<span class="entry-sig">'+sig+'</span>';
+  h+='<div class="entry-tags"><span class="tag tag-'+e.tag+'">'+e.tag.toUpperCase()+'</span></div></div>';
+  h+='<div class="entry-body"><div class="entry-desc">'+desc(e.key)+'</div>';
+  if(e.params&&e.params.length){
+    h+='<div class="pt">'+pl('params')+'</div>';
+    e.params.forEach(function(p){h+='<div class="pr"><span class="pn">'+p.n+'</span><span class="pty">'+p.t+'</span><span class="pd">'+p.d+'</span></div>';});
+  }
+  if(e.ret&&e.ret.type&&e.ret.type!=='—'){
+    h+='<div class="ret"><span class="rl">'+pl('returns')+'</span><span class="rt">'+e.ret.type+'</span><span class="rd">'+e.ret.desc+'</span></div>';
+  }
+  if(e.props&&e.props.length){
+    h+='<div class="pt">'+pl('props')+'</div><table class="tbl"><tr><th>'+pl('props')+'</th><th>Tip</th><th>—</th></tr>';
+    e.props.forEach(function(p){h+='<tr><td>.'+p.n+'</td><td>'+p.t+'</td><td>'+p.d+'</td></tr>';});
+    h+='</table>';
+  }
+  if(e.methods&&e.methods.length){
+    h+='<div class="pt">'+pl('methods')+'</div><table class="tbl"><tr><th>Metod</th><th>—</th></tr>';
+    e.methods.forEach(function(m){h+='<tr><td>.'+m.n+'</td><td>'+m.d+'</td></tr>';});
+    h+='</table>';
+  }
+  if(e.langs&&e.langs.length){
+    h+='<div class="pt">'+pl('translations')+'</div><div class="trans-grid">'+transChips(e.langs)+'</div>';
+  }
+  if(e.code){
+    h+='<div class="pt">'+pl('example')+'</div><div class="cb"><span class="cl">UniKOD</span><pre>'+e.code+'</pre></div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function renderAll(){
+  var data=getData();
+  var c=document.getElementById('content');
+  var heroDesc={
+    tr:'Tüm built-in fonksiyonlar, veri tipleri, GUI nesneleri ve direktifler. 6 dilde.',
+    en:'All built-in functions, data types, GUI objects and directives. In 6 languages.',
+    de:'Alle eingebauten Funktionen, Datentypen, GUI-Objekte und Direktiven. In 6 Sprachen.',
+    fr:'Toutes les fonctions intégrées, types de données, objets GUI et directives. En 6 langues.',
+    es:'Todas las funciones integradas, tipos de datos, objetos GUI y directivas. En 6 idiomas.',
+    id:'Semua fungsi bawaan, tipe data, objek GUI dan direktif. Dalam 6 bahasa.'
+  };
+  var h='<div class="hero"><div class="v-badge">UniKOD <span>v1.0</span> — API Reference</div><h1>Uni<em>KOD</em> API</h1><p>'+(heroDesc[_lang]||heroDesc.tr)+'</p></div>';
+  data.forEach(function(sec){
+    var entries=sec.entries.filter(function(e){
+      if(!_search) return true;
+      var k=(kw(e.key)||'').toLowerCase();
+      var d=(desc(e.key)||'').toLowerCase();
+      return k.includes(_search)||d.includes(_search)||e.key.toLowerCase().includes(_search);
+    });
+    if(!entries.length) return;
+    h+='<div class="section" id="sec_'+sec.id+'">';
+    h+='<div class="sec-hdr"><span class="sec-icon">'+sec.icon+'</span><div class="sec-title">'+st(sec.id)+'</div></div>';
+    entries.forEach(function(e){h+=renderEntry(e);});
+    h+='</div>';
+  });
+  c.innerHTML=h;
+  renderSidebar(data);
+}
+
+function renderSidebar(data){
+  var colors={fn:'#4f9eff',oz:'#34d399',olay:'#fb923c',tip:'#a78bfa',kw:'#fbbf24'};
+  var h='';
+  data.forEach(function(sec){
+    h+='<div class="sb-section"><div class="sb-title">'+sec.icon+' '+st(sec.id)+'</div>';
+    sec.entries.forEach(function(e){
+      h+='<a class="sb-item" href="#sec_'+sec.id+'" onclick="jumpTo(\''+sec.id+'\');return false;"><span class="sb-dot" style="background:'+colors[e.tag]+'"></span>'+kw(e.key)+'</a>';
+    });
+    h+='</div>';
+  });
+  document.getElementById('sbContent').innerHTML=h;
+}
+
+function jumpTo(id){
+  var el=document.getElementById('sec_'+id);
+  if(el){el.scrollIntoView({behavior:'smooth'});}
+  closeSidebar();
+}
+
+function setLang(l){
+  _lang=l;
+  document.querySelectorAll('.lbtn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===l);});
+  renderAll();
+}
+
+function doSearch(v){
+  _search=v.toLowerCase().trim();
+  renderAll();
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+window.onload=function(){
+  var bar=document.getElementById('langBar');
+  Object.keys(LANGS).forEach(function(lk){
+    var b=document.createElement('button');
+    b.className='lbtn'+(lk===_lang?' active':'');
+    b.dataset.lang=lk;
+    b.textContent=LANGS[lk].flag+' '+LANGS[lk].name;
+    b.onclick=function(){setLang(lk);};
+    bar.appendChild(b);
+  });
+  renderAll();
+};
+</script>
+</body>
+</html>
