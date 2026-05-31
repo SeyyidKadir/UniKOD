@@ -173,9 +173,11 @@ MIT License — free to use, modify, and distribute.
 ---
 
 ---
-#API Ref
-[Open For API Ref's and examples](https://seyyidkadir.github.io/UniKOD/unikod_api.html)
+## 📚 API Reference
 
+Full function reference, data types, GUI objects and examples:
+
+👉 [Open API Reference](https://seyyidkadir.github.io/UniKOD/unikod_api.html)
 
 ---
 ## 🤝 Contributing
